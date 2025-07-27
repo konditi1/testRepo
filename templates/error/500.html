@@ -1,0 +1,17 @@
+{{define "500"}}
+{{template "header" .}}
+<div class="error-page">
+    <div class="error-container">
+        <div class="error-icon">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h1>500 - Internal Server Error</h1>
+        <p>Something went wrong on our end. Please try again later.</p>
+        <div class="error-actions">
+            <a href="javascript:window.history.back();" class="btn-return-home">
+                <i class="fa-solid fa-arrow-left"></i> Go Back
+            </a>
+        </div>
+    </div>
+</div>
+{{end}}

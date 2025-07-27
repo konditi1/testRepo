@@ -1,0 +1,92 @@
+{{define "profile"}}
+{{template "header" .}}
+<section class="profile-container">
+    {{if .Error}}
+    <div class="error-message">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        {{.Error}}
+    </div>
+    {{end}}
+    {{if .Success}}
+    <div class="success-message">
+        <i class="fa-solid fa-check-circle"></i>
+        {{.Success}}
+    </div>
+    {{end}}
+    <div class="title">
+        <h2>Manage Your Profile</h2>
+        <p>Update your professional details and showcase your expertise.</p>
+    </div>
+    <form action="/profile" method="POST" class="profile-form" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="email">Email address:</label>
+            <input type="text" id="email" name="email" value="{{.User.Email}}" required>
+        </div>
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" value="{{.User.Username}}" required>
+        </div>
+        <div class="form-group">
+            <label for="first_name">First Name:</label>
+            <input type="text" id="first_name" name="first_name" value="{{.User.FirstName}}" required>
+        </div>
+        <div class="form-group">
+            <label for="last_name">Last Name:</label>
+            <input type="text" id="last_name" name="last_name" value="{{.User.LastName}}" required>
+        </div>
+        <div class="form-group">
+            <label for="affiliation">Affiliation:</label>
+            <input type="text" id="affiliation" name="affiliation" value="{{.User.Affiliation}}" placeholder="e.g., University of Nairobi, UNICEF">
+        </div>
+        <div class="form-group">
+            <label for="bio">Bio:</label>
+            <textarea id="bio" name="bio" rows="4" placeholder="Tell us about yourself and your M&E experience">{{.User.Bio}}</textarea>
+        </div>
+        <div class="form-group">
+            <label for="years_experience">Years of Experience:</label>
+            <input type="number" id="years_experience" name="years_experience" min="0" max="50" value="{{.User.YearsExperience}}" placeholder="e.g., 5">
+        </div>
+        <div class="form-group">
+            <label for="core_competencies">Core Competencies:</label>
+            <input type="text" id="core_competencies" name="core_competencies" value="{{.User.CoreCompetencies}}" placeholder="e.g., Data Analysis, Impact Evaluation, Survey Design">
+            <small>Enter skills separated by commas</small>
+        </div>
+        <div class="form-group">
+            <label for="profile">Upload Profile Picture:</label>
+            {{if .User.ProfileURL}}
+            <p>Current: <a href="{{.User.ProfileURL}}" target="_blank">View Profile Picture</a></p>
+            {{else if .User.Profile}}
+            <p>Current: <a href="{{.User.Profile}}" target="_blank">View Profile Picture</a></p>
+            {{end}}
+            <input type="file" id="profile" name="profile" accept="image/*">
+        </div>
+        <div class="form-group">
+            <label for="cv">Upload CV (PDF):</label>
+            {{if .User.CVURL}}
+            <p>Current: <a href="{{.User.CVURL}}" target="_blank">View CV</a></p>
+            {{else if .User.CVPath}}
+            <p>Current: <a href="{{.User.CVPath}}" target="_blank">View CV</a></p>
+            {{end}}
+            <input type="file" id="cv" name="cv" accept="application/pdf">
+        </div>
+        <div class="form-group">
+            <label for="expertise">Expertise Level:</label>
+            <select name="expertise" id="expertise" required>
+                <option value="none" {{if eq .User.Expertise "none"}}selected{{end}}>Select Expertise</option>
+                <option value="beginner" {{if eq .User.Expertise "beginner"}}selected{{end}}>Beginner</option>
+                <option value="intermediate" {{if eq .User.Expertise "intermediate"}}selected{{end}}>Intermediate</option>
+                <option value="advanced" {{if eq .User.Expertise "advanced"}}selected{{end}}>Advanced</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-save">Save Profile</button>
+    </form>
+    
+    <!-- Debug info (you can remove this after confirming it works) -->
+    <div style="display: none;">
+        <p>ProfileURL: {{.User.ProfileURL}}</p>
+        <p>ProfilePublicID: {{.User.ProfilePublicID}}</p>
+        <p>CVURL: {{.User.CVURL}}</p>
+        <p>CVPublicID: {{.User.CVPublicID}}</p>
+    </div>
+</section>
+{{end}}

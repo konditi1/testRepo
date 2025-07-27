@@ -1,0 +1,353 @@
+/* Document Repository Styles */
+.document-repository-section {
+    margin-top: 1.5rem;
+}
+
+.document-upload {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.upload-btn {
+    display: inline-block;
+    background-color: #3b82f6;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.upload-btn:hover {
+    background-color: #2563eb;
+}
+
+.upload-help {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.recent-documents {
+    margin-top: 1rem;
+}
+
+.recent-documents h4 {
+    font-size: 0.875rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #4b5563;
+}
+
+.documents-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.document-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background-color: white;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s;
+}
+
+.document-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.document-icon {
+    flex-shrink: 0;
+    margin-right: 0.75rem;
+    font-size: 1.5rem;
+}
+
+.document-icon-pdf { color: #ef4444; }
+.document-icon-word { color: #2563eb; }
+.document-icon-excel { color: #16a34a; }
+.document-icon-powerpoint { color: #ea580c; }
+.document-icon-image { color: #8b5cf6; }
+.document-icon-video { color: #ec4899; }
+.document-icon-audio { color: #06b6d4; }
+.document-icon-archive { color: #f59e0b; }
+.document-icon-other { color: #6b7280; }
+
+.document-info {
+    flex-grow: 1;
+}
+
+.document-title {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.document-meta {
+    display: flex;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.document-author {
+    margin-right: 0.75rem;
+}
+
+.document-date {
+    white-space: nowrap;
+}
+
+.view-all-documents {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.btn-view-all {
+    display: inline-block;
+    font-size: 0.875rem;
+    color: #4b5563;
+    padding: 0.5rem 1rem;
+    background-color: #f3f4f6;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.btn-view-all:hover {
+    background-color: #e5e7eb;
+    color: #1f2937;
+}
+
+.document-stats {
+    display: flex;
+    margin-top: 1.5rem;
+    padding: 0.75rem;
+    background-color: #f3f4f6;
+    border-radius: 8px;
+}
+
+.document-stats .stat-item {
+    flex: 1;
+    text-align: center;
+}
+
+.document-stats .stat-value {
+    display: block;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.document-stats .stat-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 10% auto;
+    padding: 2rem;
+    border-radius: 10px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    color: #9ca3af;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #1f2937;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #1f2937;
+    font-size: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #4b5563;
+}
+
+.form-group input[type="text"],
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+}
+
+.form-group input[type="file"] {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0;
+}
+
+.file-info {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.btn-upload {
+    display: block;
+    width: 100%;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-upload:hover {
+    background-color: #2563eb;
+}
+
+/* Document Card styles in main content area */
+.document-card {
+    transition: transform 0.2s;
+}
+
+.document-card:hover {
+    transform: translateY(-2px);
+}
+
+.document-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.document-header .document-icon {
+    font-size: 2rem;
+    margin-right: 1rem;
+}
+
+.document-header h4 {
+    margin: 0;
+}
+
+.document-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.document-version {
+    background-color: #dbeafe;
+    color: #1e40af;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+}
+
+.document-downloads {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.no-description {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+.document-tags-container {
+    display: flex;
+    align-items: center;
+}
+
+.document-tags ul {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.document-tags li {
+    background-color: #e5e7eb;
+    color: #4b5563;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    margin-right: 0.5rem;
+}
+
+.btn-download {
+    cursor: pointer;
+    color: #4b5563;
+    transition: color 0.2s;
+}
+
+.btn-download:hover {
+    color: #3b82f6;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .document-repository-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-in-out;
+    }
+    
+    .document-repository-content.expanded {
+        max-height: 600px;
+    }
+    
+    .document-toggle-icon {
+        transition: transform 0.3s ease;
+    }
+    
+    .document-toggle-icon.collapsed {
+        transform: rotate(-90deg);
+    }
+}

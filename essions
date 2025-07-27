@@ -1,0 +1,35 @@
+                                            Table "public.users"
+      Column       |            Type             | Collation | Nullable |              Default              
+-------------------+-----------------------------+-----------+----------+-----------------------------------
+ id                | integer                     |           | not null | nextval('users_id_seq'::regclass)
+ email             | text                        |           | not null | 
+ username          | text                        |           | not null | 
+ first_name        | character varying(255)      |           |          | NULL::character varying
+ last_name         | character varying(255)      |           |          | NULL::character varying
+ profile_url       | text                        |           |          | 
+ profile_public_id | text                        |           |          | 
+ affiliation       | text                        |           |          | 
+ bio               | text                        |           |          | 
+ years_experience  | integer                     |           |          | 0
+ cv_url            | text                        |           |          | 
+ cv_public_id      | text                        |           |          | 
+ core_competencies | text                        |           |          | 
+ expertise         | expertise_level             |           |          | 'none'::expertise_level
+ role              | user_role                   |           |          | 'user'::user_role
+ password          | character varying(255)      |           |          | NULL::character varying
+ created_at        | timestamp without time zone |           |          | CURRENT_TIMESTAMP
+ is_online         | boolean                     |           |          | false
+Indexes:
+    "users_pkey" PRIMARY KEY, btree (id)
+    "users_email_key" UNIQUE CONSTRAINT, btree (email)
+    "users_username_key" UNIQUE CONSTRAINT, btree (username)
+Referenced by:
+    TABLE "comment_reactions" CONSTRAINT "comment_reactions_user_id_fkey" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    TABLE "comments" CONSTRAINT "comments_user_id_fkey" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    TABLE "messages" CONSTRAINT "messages_recipient_id_fkey" FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE CASCADE
+    TABLE "messages" CONSTRAINT "messages_sender_id_fkey" FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE
+    TABLE "post_reactions" CONSTRAINT "post_reactions_user_id_fkey" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    TABLE "posts" CONSTRAINT "posts_user_id_fkey" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    TABLE "questions" CONSTRAINT "questions_user_id_fkey" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    TABLE "sessions" CONSTRAINT "sessions_user_id_fkey" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+

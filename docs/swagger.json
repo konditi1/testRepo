@@ -1,0 +1,1583 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Enterprise API for EvalHub platform with role-based security",
+        "title": "EvalHub API",
+        "termsOfService": "https://evalhub.com/terms",
+        "contact": {
+            "name": "EvalHub API Support",
+            "url": "https://evalhub.com/support",
+            "email": "api-support@evalhub.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0.0"
+    },
+    "host": "localhost:9000",
+    "basePath": "/api/v1",
+    "schemes": ["http", "https"],
+    "consumes": ["application/json"],
+    "produces": ["application/json"],
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Type \"Bearer\" followed by a space and JWT token.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        },
+        "SessionAuth": {
+            "description": "Session-based authentication cookie",
+            "type": "apiKey",
+            "name": "session_token",
+            "in": "cookie"
+        }
+    },
+    "paths": {
+        "/health": {
+            "get": {
+                "description": "Returns the health status of the API",
+                "tags": ["System"],
+                "summary": "Health check endpoint",
+                "responses": {
+                    "200": {
+                        "description": "API is healthy",
+                        "schema": {
+                            "$ref": "#/definitions/HealthResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "API is unhealthy",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/info": {
+            "get": {
+                "description": "Returns API information and available endpoints",
+                "tags": ["System"],
+                "summary": "Get API information",
+                "responses": {
+                    "200": {
+                        "description": "API information",
+                        "schema": {
+                            "$ref": "#/definitions/APIInfo"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "description": "Register a new user with the provided information",
+                "tags": ["Authentication"],
+                "summary": "Register a new user",
+                "parameters": [
+                    {
+                        "description": "Registration details",
+                        "name": "registerRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "User registered successfully",
+                        "schema": {
+                            "$ref": "#/definitions/AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request format or validation error",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "User with email or username already exists",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "description": "Authenticate a user with email/username and password",
+                "tags": ["Authentication"],
+                "summary": "Authenticate a user",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "loginRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Authentication successful",
+                        "schema": {
+                            "$ref": "#/definitions/AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request format",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Account locked or not verified",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "security": [
+                    {"BearerAuth": []},
+                    {"SessionAuth": []}
+                ],
+                "description": "Invalidate the current session",
+                "tags": ["Authentication"],
+                "summary": "Logout the current user",
+                "responses": {
+                    "200": {
+                        "description": "Successfully logged out",
+                        "schema": {
+                            "$ref": "#/definitions/SuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "description": "Get a new access token using a refresh token",
+                "tags": ["Authentication"],
+                "summary": "Refresh authentication token",
+                "parameters": [
+                    {
+                        "description": "Refresh token",
+                        "name": "refreshRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "New tokens generated",
+                        "schema": {
+                            "$ref": "#/definitions/AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid refresh token",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/forgot-password": {
+            "post": {
+                "description": "Send a password reset link to the provided email",
+                "tags": ["Authentication"],
+                "summary": "Request password reset",
+                "parameters": [
+                    {
+                        "description": "Email address",
+                        "name": "forgotPasswordRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ForgotPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Password reset email sent",
+                        "schema": {
+                            "$ref": "#/definitions/SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid email format",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/profile": {
+            "get": {
+                "security": [
+                    {"BearerAuth": []},
+                    {"SessionAuth": []}
+                ],
+                "description": "Retrieves the authenticated user's profile information",
+                "tags": ["Users"],
+                "summary": "Get current user's profile",
+                "responses": {
+                    "200": {
+                        "description": "User profile retrieved successfully",
+                        "schema": {
+                            "$ref": "#/definitions/UserProfile"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {"BearerAuth": []},
+                    {"SessionAuth": []}
+                ],
+                "description": "Updates the authenticated user's profile information",
+                "tags": ["Users"],
+                "summary": "Update current user's profile",
+                "parameters": [
+                    {
+                        "description": "Profile update data",
+                        "name": "updateProfileRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UpdateProfileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Profile updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/UserProfile"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "security": [
+                    {"BearerAuth": []},
+                    {"SessionAuth": []}
+                ],
+                "description": "Retrieves a paginated list of users with optional filtering",
+                "tags": ["Users"],
+                "summary": "List users",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "minimum": 1,
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 20,
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "enum": ["expert", "evaluator", "admin"],
+                        "description": "Filter by user role",
+                        "name": "role",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of users",
+                        "schema": {
+                            "$ref": "#/definitions/UsersListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "security": [
+                    {"BearerAuth": []},
+                    {"SessionAuth": []}
+                ],
+                "description": "Retrieves a user's public profile by ID",
+                "tags": ["Users"],
+                "summary": "Get user by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User found",
+                        "schema": {
+                            "$ref": "#/definitions/UserProfile"
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/posts": {
+            "get": {
+                "security": [
+                    {"BearerAuth": []},
+                    {"SessionAuth": []}
+                ],
+                "description": "Retrieves a paginated list of posts",
+                "tags": ["Posts"],
+                "summary": "List posts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "minimum": 1,
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 20,
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by category",
+                        "name": "category",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of posts",
+                        "schema": {
+                            "$ref": "#/definitions/PostsListResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {"BearerAuth": []},
+                    {"SessionAuth": []}
+                ],
+                "description": "Creates a new post",
+                "tags": ["Posts"],
+                "summary": "Create a new post",
+                "parameters": [
+                    {
+                        "description": "Post creation data",
+                        "name": "createPostRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/CreatePostRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Post created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/PostResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/posts/{id}": {
+            "get": {
+                "security": [
+                    {"BearerAuth": []},
+                    {"SessionAuth": []}
+                ],
+                "description": "Retrieves a specific post by ID",
+                "tags": ["Posts"],
+                "summary": "Get post by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Post found",
+                        "schema": {
+                            "$ref": "#/definitions/PostResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {"BearerAuth": []},
+                    {"SessionAuth": []}
+                ],
+                "description": "Updates a post (owner, moderator, or admin only)",
+                "tags": ["Posts"],
+                "summary": "Update post",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Post update data",
+                        "name": "updatePostRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UpdatePostRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Post updated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/PostResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {"BearerAuth": []},
+                    {"SessionAuth": []}
+                ],
+                "description": "Deletes a post (owner, moderator, or admin only)",
+                "tags": ["Posts"],
+                "summary": "Delete post",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Post deleted successfully",
+                        "schema": {
+                            "$ref": "#/definitions/SuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - insufficient permissions",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Post not found",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/comments": {
+            "post": {
+                "security": [
+                    {"BearerAuth": []},
+                    {"SessionAuth": []}
+                ],
+                "description": "Creates a new comment",
+                "tags": ["Comments"],
+                "summary": "Create a new comment",
+                "parameters": [
+                    {
+                        "description": "Comment creation data",
+                        "name": "createCommentRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/CreateCommentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Comment created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/CommentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/jobs": {
+            "get": {
+                "security": [
+                    {"BearerAuth": []},
+                    {"SessionAuth": []}
+                ],
+                "description": "Retrieves a paginated list of jobs",
+                "tags": ["Jobs"],
+                "summary": "List jobs",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "minimum": 1,
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 20,
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by job type",
+                        "name": "type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of jobs",
+                        "schema": {
+                            "$ref": "#/definitions/JobsListResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {"BearerAuth": []},
+                    {"SessionAuth": []}
+                ],
+                "description": "Creates a new job posting",
+                "tags": ["Jobs"],
+                "summary": "Create a new job",
+                "parameters": [
+                    {
+                        "description": "Job creation data",
+                        "name": "createJobRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/CreateJobRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Job created successfully",
+                        "schema": {
+                            "$ref": "#/definitions/JobResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request data",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "error": {
+                    "type": "string",
+                    "example": "An error occurred"
+                },
+                "code": {
+                    "type": "string",
+                    "example": "VALIDATION_ERROR"
+                },
+                "request_id": {
+                    "type": "string",
+                    "example": "req_123456789"
+                }
+            }
+        },
+        "SuccessResponse": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Operation completed successfully"
+                },
+                "request_id": {
+                    "type": "string",
+                    "example": "req_123456789"
+                }
+            }
+        },
+        "HealthResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "example": "healthy"
+                },
+                "version": {
+                    "type": "string",
+                    "example": "1.0.0"
+                },
+                "timestamp": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2024-01-15T10:30:00Z"
+                },
+                "services": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "example": {
+                        "database": "healthy",
+                        "cache": "healthy"
+                    }
+                }
+            }
+        },
+        "APIInfo": {
+            "type": "object",
+            "properties": {
+                "version": {
+                    "type": "string",
+                    "example": "1.0.0"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "EvalHub API"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Enterprise API for EvalHub platform with role-based security"
+                },
+                "features": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "JWT Authentication",
+                        "Role-based Access Control",
+                        "Content Security"
+                    ]
+                }
+            }
+        },
+        "RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "username",
+                "password",
+                "confirm_password",
+                "first_name",
+                "last_name",
+                "role",
+                "accept_terms"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "user@example.com"
+                },
+                "username": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 50,
+                    "example": "johndoe"
+                },
+                "password": {
+                    "type": "string",
+                    "format": "password",
+                    "minLength": 8,
+                    "example": "securePassword123!"
+                },
+                "confirm_password": {
+                    "type": "string",
+                    "format": "password",
+                    "minLength": 8,
+                    "example": "securePassword123!"
+                },
+                "first_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "example": "John"
+                },
+                "last_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "example": "Doe"
+                },
+                "role": {
+                    "type": "string",
+                    "enum": ["expert", "evaluator", "admin"],
+                    "example": "expert"
+                },
+                "accept_terms": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "affiliation": {
+                    "type": "string",
+                    "example": "Example University"
+                },
+                "bio": {
+                    "type": "string",
+                    "example": "Experienced professional in the field"
+                }
+            }
+        },
+        "LoginRequest": {
+            "type": "object",
+            "required": [
+                "login",
+                "password"
+            ],
+            "properties": {
+                "login": {
+                    "type": "string",
+                    "description": "Email or username",
+                    "example": "user@example.com"
+                },
+                "password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "securePassword123!"
+                },
+                "remember": {
+                    "type": "boolean",
+                    "description": "Whether to create a persistent session",
+                    "default": false
+                }
+            }
+        },
+        "RefreshTokenRequest": {
+            "type": "object",
+            "required": [
+                "refresh_token"
+            ],
+            "properties": {
+                "refresh_token": {
+                    "type": "string",
+                    "description": "The refresh token",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                }
+            }
+        },
+        "ForgotPasswordRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "user@example.com"
+                }
+            }
+        },
+        "AuthResponse": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "access_token": {
+                    "type": "string",
+                    "description": "JWT access token",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "refresh_token": {
+                    "type": "string",
+                    "description": "Refresh token for getting new access tokens",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "expires_in": {
+                    "type": "integer",
+                    "description": "Token expiration in seconds",
+                    "example": 3600
+                },
+                "token_type": {
+                    "type": "string",
+                    "default": "Bearer",
+                    "example": "Bearer"
+                },
+                "user": {
+                    "$ref": "#/definitions/UserInfo"
+                },
+                "request_id": {
+                    "type": "string",
+                    "example": "req_123456789"
+                }
+            }
+        },
+        "UserInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 1
+                },
+                "username": {
+                    "type": "string",
+                    "example": "johndoe"
+                },
+                "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "user@example.com"
+                },
+                "first_name": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "last_name": {
+                    "type": "string",
+                    "example": "Doe"
+                },
+                "role": {
+                    "type": "string",
+                    "enum": ["expert", "evaluator", "admin"],
+                    "example": "expert"
+                }
+            }
+        },
+        "UserProfile": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 1
+                },
+                "username": {
+                    "type": "string",
+                    "example": "johndoe"
+                },
+                "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "user@example.com"
+                },
+                "first_name": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "last_name": {
+                    "type": "string",
+                    "example": "Doe"
+                },
+                "role": {
+                    "type": "string",
+                    "enum": ["expert", "evaluator", "admin"],
+                    "example": "expert"
+                },
+                "bio": {
+                    "type": "string",
+                    "example": "Experienced professional in the field"
+                },
+                "avatar_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "example": "https://example.com/avatars/johndoe.jpg"
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2023-01-01T12:00:00Z"
+                }
+            }
+        },
+        "UpdateProfileRequest": {
+            "type": "object",
+            "properties": {
+                "first_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "example": "John"
+                },
+                "last_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "example": "Doe"
+                },
+                "bio": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "Updated bio information"
+                },
+                "location": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "New York, NY"
+                },
+                "website": {
+                    "type": "string",
+                    "format": "uri",
+                    "maxLength": 255,
+                    "example": "https://johndoe.com"
+                }
+            }
+        },
+        "UsersListResponse": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/UserProfile"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/PaginationMeta"
+                },
+                "request_id": {
+                    "type": "string",
+                    "example": "req_123456789"
+                }
+            }
+        },
+        "CreatePostRequest": {
+            "type": "object",
+            "required": [
+                "title",
+                "content",
+                "category"
+            ],
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255,
+                    "example": "How to implement authentication in Go"
+                },
+                "content": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "This is the content of the post explaining authentication implementation..."
+                },
+                "category": {
+                    "type": "string",
+                    "example": "programming"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": ["go", "authentication", "jwt"]
+                },
+                "is_featured": {
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                }
+            }
+        },
+        "UpdatePostRequest": {
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255,
+                    "example": "Updated: How to implement authentication in Go"
+                },
+                "content": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "Updated content with more detailed explanation..."
+                },
+                "category": {
+                    "type": "string",
+                    "example": "programming"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": ["go", "authentication", "jwt", "security"]
+                },
+                "is_featured": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "PostResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 1
+                },
+                "title": {
+                    "type": "string",
+                    "example": "How to implement authentication in Go"
+                },
+                "content": {
+                    "type": "string",
+                    "example": "This is the content of the post..."
+                },
+                "category": {
+                    "type": "string",
+                    "example": "programming"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": ["go", "authentication", "jwt"]
+                },
+                "author": {
+                    "$ref": "#/definitions/UserInfo"
+                },
+                "is_featured": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "likes_count": {
+                    "type": "integer",
+                    "example": 25
+                },
+                "dislikes_count": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "comments_count": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "views_count": {
+                    "type": "integer",
+                    "example": 156
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2023-01-01T12:00:00Z"
+                }
+            }
+        },
+        "PostsListResponse": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PostResponse"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/PaginationMeta"
+                },
+                "request_id": {
+                    "type": "string",
+                    "example": "req_123456789"
+                }
+            }
+        },
+        "CreateCommentRequest": {
+            "type": "object",
+            "required": [
+                "content",
+                "parent_type",
+                "parent_id"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "This is a helpful comment on the post"
+                },
+                "parent_type": {
+                    "type": "string",
+                    "enum": ["post", "question", "document", "comment"],
+                    "example": "post"
+                },
+                "parent_id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 1
+                }
+            }
+        },
+        "CommentResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 1
+                },
+                "content": {
+                    "type": "string",
+                    "example": "This is a helpful comment"
+                },
+                "parent_type": {
+                    "type": "string",
+                    "enum": ["post", "question", "document", "comment"],
+                    "example": "post"
+                },
+                "parent_id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 1
+                },
+                "author": {
+                    "$ref": "#/definitions/UserInfo"
+                },
+                "likes_count": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "dislikes_count": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "replies_count": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2023-01-01T12:00:00Z"
+                }
+            }
+        },
+        "CreateJobRequest": {
+            "type": "object",
+            "required": [
+                "title",
+                "description",
+                "company",
+                "location",
+                "job_type",
+                "salary_range"
+            ],
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255,
+                    "example": "Senior Go Developer"
+                },
+                "description": {
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "We are looking for an experienced Go developer to join our team..."
+                },
+                "company": {
+                    "type": "string",
+                    "example": "TechCorp Inc."
+                },
+                "location": {
+                    "type": "string",
+                    "example": "New York, NY"
+                },
+                "job_type": {
+                    "type": "string",
+                    "enum": ["full-time", "part-time", "contract", "freelance", "internship"],
+                    "example": "full-time"
+                },
+                "salary_range": {
+                    "type": "string",
+                    "example": "$100,000 - $150,000"
+                },
+                "requirements": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": ["5+ years Go experience", "Experience with microservices", "Knowledge of Docker"]
+                },
+                "benefits": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": ["Health insurance", "401k matching", "Remote work"]
+                },
+                "remote_ok": {
+                    "type": "boolean",
+                    "default": false,
+                    "example": true
+                },
+                "is_featured": {
+                    "type": "boolean",
+                    "default": false,
+                    "example": false
+                }
+            }
+        },
+        "JobResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 1
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Senior Go Developer"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "We are looking for an experienced Go developer..."
+                },
+                "company": {
+                    "type": "string",
+                    "example": "TechCorp Inc."
+                },
+                "location": {
+                    "type": "string",
+                    "example": "New York, NY"
+                },
+                "job_type": {
+                    "type": "string",
+                    "enum": ["full-time", "part-time", "contract", "freelance", "internship"],
+                    "example": "full-time"
+                },
+                "salary_range": {
+                    "type": "string",
+                    "example": "$100,000 - $150,000"
+                },
+                "requirements": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": ["5+ years Go experience", "Experience with microservices"]
+                },
+                "benefits": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": ["Health insurance", "401k matching"]
+                },
+                "remote_ok": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "is_featured": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "employer": {
+                    "$ref": "#/definitions/UserInfo"
+                },
+                "applications_count": {
+                    "type": "integer",
+                    "example": 15
+                },
+                "views_count": {
+                    "type": "integer",
+                    "example": 234
+                },
+                "created_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2023-01-01T12:00:00Z"
+                },
+                "expires_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2023-02-01T12:00:00Z"
+                }
+            }
+        },
+        "JobsListResponse": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/JobResponse"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/PaginationMeta"
+                },
+                "request_id": {
+                    "type": "string",
+                    "example": "req_123456789"
+                }
+            }
+        },
+        "PaginationMeta": {
+            "type": "object",
+            "properties": {
+                "current_page": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 1
+                },
+                "per_page": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 20
+                },
+                "total_pages": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 5
+                },
+                "total_count": {
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 95
+                },
+                "has_next": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "has_prev": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "System",
+            "description": "System and health check endpoints"
+        },
+        {
+            "name": "Authentication",
+            "description": "User authentication and authorization endpoints"
+        },
+        {
+            "name": "Users",
+            "description": "User management and profile endpoints"
+        },
+        {
+            "name": "Posts",
+            "description": "Post creation, management, and interaction endpoints"
+        },
+        {
+            "name": "Comments",
+            "description": "Comment creation, management, and interaction endpoints"
+        },
+        {
+            "name": "Jobs",
+            "description": "Job posting and application management endpoints"
+        }
+    ]
+}

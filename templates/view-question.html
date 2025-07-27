@@ -1,0 +1,158 @@
+{{define "view-question"}}
+{{template "header" .}}
+<section class="view-post-container">
+    <div class="sidebar">
+        <h3>Discover</h3>
+        <div class="sidebar-links">
+            <a href="#"><i class="fa-solid fa-spinner"></i>&emsp;Trending</a>
+            <a href="#"><i class="fa-regular fa-clock"></i>&emsp;Latest</a>
+            <a href="#"><i class="fa-regular fa-star"></i>&emsp;Top</a>
+            <a href="#"><i class="fa-solid fa-chart-line"></i>&emsp;My Activities</a>
+        </div>
+        <h3>Categories</h3>
+        <div class="side-categoies">
+            {{range $category, $count := .Categories}}
+                <a href="#"><i class="fa-solid fa-laptop-code"></i>&emsp;{{$category}}<span>[ {{$count}} ]</span></a>
+            {{end}}
+        </div>
+    </div>
+    <div class="posts post-container">
+        <div class="post-header">
+            <h3>{{.Question.Title}}</h3>
+            <p>By <strong>{{.Question.Username}}</strong> in <strong>{{.Question.Category}}</strong></p>
+            <p>Posted on {{.Question.CreatedAtHuman}}</p>
+            <p><strong>Target Group:</strong> {{.Question.TargetGroup}}</p>
+        </div>
+        <div class="post-content">
+            {{if .Question.FileURL}}
+                <!-- Check if file is an image -->
+                {{if or (contains .Question.FileURL ".jpg") (contains .Question.FileURL ".jpeg") (contains .Question.FileURL ".png") (contains .Question.FileURL ".gif") (contains .Question.FileURL ".svg")}}
+                    <img src="{{.Question.FileURL}}" alt="Question Attachment" class="post-image-full">
+                {{else}}
+                    <div class="file-attachment">
+                        <a href="{{.Question.FileURL}}" target="_blank" class="attachment-link">
+                            <i class="fa-solid fa-file"></i> View Attachment
+                        </a>
+                    </div>
+                {{end}}
+            {{end}}
+            {{if .Question.Content}}
+                <p>{{.Question.Content | html}}</p>
+            {{else}}
+                <p><em>No additional description provided.</em></p>
+            {{end}}
+        </div>
+        <div class="post-footer">
+            <div class="post-actions">
+                {{if .IsAuthenticated}}
+                    <div class="reaction">
+                        <i class="btn-like-question" data-id="{{.Question.ID}}">
+                            <i class="fa-regular fa-thumbs-up"></i> 
+                            <span>{{.Question.Likes}}</span>
+                        </i>
+                        <i class="btn-dislike-question" data-id="{{.Question.ID}}">
+                            <i class="fa-regular fa-thumbs-down"></i> 
+                            <span>{{.Question.Dislikes}}</span>
+                        </i>
+                        <i class="btn-comment" data-id="{{.Question.ID}}">
+                            <i class="fa-regular fa-message"></i> 
+                            <span>{{.Question.CommentsCount}}</span>
+                        </i>
+                        <i class="fa-solid fa-share-nodes"></i>
+                    </div>
+                {{else}}
+                    <div class="guest-reaction">
+                        <a href="/login" class="reaction-link">
+                            <i class="guest-post-like-reaction">
+                                <i class="fa-regular fa-thumbs-up"></i> 
+                                <span>{{.Question.Likes}}</span>
+                            </i>
+                            <i class="guest-post-dislike-reaction">
+                                <i class="fa-regular fa-thumbs-down"></i> 
+                                <span>{{.Question.Dislikes}}</span>
+                            </i>
+                            <i class="guest-post-comment-reaction">
+                                <i class="fa-regular fa-message"></i> 
+                                <span>{{.Question.CommentsCount}}</span>
+                            </i>
+                            <i class="guest-post-share">
+                                <i class="fa-solid fa-share-nodes"></i>
+                            </i>
+                        </a>
+                    </div>
+                {{end}}
+            </div>
+            <div class="comments-section" id="comments-section">
+                <h3>Answers & Comments (<span class="comments-count">{{len .Comments}}</span>)</h3>
+                {{if .IsAuthenticated}}
+                    <form action="/add-comment" method="POST" class="comment-form">
+                        <input type="hidden" name="question_id" value="{{.Question.ID}}">
+                        <textarea name="comment" placeholder="Share your thoughts or provide an answer..." required></textarea>
+                        <button type="submit" class="btn-submit-comment">Post Answer</button>
+                    </form>
+                {{else}}
+                    <div class="guest-comment-prompt">
+                        <p><a href="/login">Login</a> or <a href="/signup">Sign up</a> to join the discussion</p>
+                    </div>
+                {{end}}
+                <!-- Comments List -->
+                <div class="comments-list">
+                    {{if .Comments}}
+                        {{range .Comments}}
+                        <div class="comment" id="comment-{{.ID}}">
+                            <div class="comment-header">
+                                <div class="comment-user">
+                                    <i class="fa-regular fa-user"></i>
+                                    <span class="username">{{.Username}}</span>
+                                </div>
+                                <span class="comment-time">{{.CreatedAtHuman}}</span>
+                            </div>
+                            <div class="comment-content">
+                                <p>{{.Content}}</p>
+                            </div>
+                            <div class="comment-footer">
+                                {{if $.IsAuthenticated}}
+                                    <div class="comment-reactions">
+                                        <i class="btn-like-comment" data-id="{{.ID}}">
+                                            <i class="fa-regular fa-thumbs-up"></i>
+                                            <span>{{.Likes}}</span>
+                                        </i>
+                                        <i class="btn-dislike-comment" data-id="{{.ID}}">
+                                            <i class="fa-regular fa-thumbs-down"></i>
+                                            <span>{{.Dislikes}}</span>
+                                        </i>
+                                    </div>
+                                {{else}}
+                                    <div class="guest-comment-reactions">
+                                        <a href="/login" class="reaction-link">
+                                            <i class="btn-like-comment">
+                                                <i class="fa-regular fa-thumbs-up"></i>
+                                                <span>{{.Likes}}</span>
+                                            </i>
+                                            <i class="btn-dislike-comment">
+                                                <i class="fa-regular fa-thumbs-down"></i>
+                                                <span>{{.Dislikes}}</span>
+                                            </i>
+                                        </a>
+                                    </div>
+                                {{end}}
+                                {{if and $.IsAuthenticated (eq .UserID $.UserID)}}
+                                    <div class="comment-actions">
+                                        <button class="btn-edit-comment" data-id="{{.ID}}">Edit</button>
+                                        <button class="btn-delete-comment" data-id="{{.ID}}">Delete</button>
+                                    </div>
+                                {{end}}
+                            </div>
+                        </div>
+                        {{end}}
+                    {{else}}
+                        <div class="no-comments">
+                            <p>No answers yet. Be the first to help!</p>
+                        </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{{end}}

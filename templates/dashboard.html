@@ -1,0 +1,631 @@
+{{define "dashboard"}}
+{{template "header" .}}
+<section class="dash-container">
+    <div class="sidebar">
+        <h3>Discover</h3>
+        <div class="sidebar-links">
+            <a href="#"><i class="fa-solid fa-arrow-trend-up"></i> Trending</a>
+            <a href="#"><i class="fa-solid fa-clock-rotate-left"></i> Latest</a>
+            <a href="#"><i class="fa-solid fa-medal"></i> Top</a>
+        </div>
+        {{ if .IsLoggedIn }}
+        <hr>
+        <div class="activities-section-header">
+            <h3><i class="fa-solid fa-chart-line"></i> <span class="activities-text">Monitor</span></h3>
+            <i class="fa-solid fa-chevron-down activities-toggle-icon"></i>
+        </div>
+        <div class="activities-scrollable">
+            <a href="/user-posts" class="btn-user-posts"><i class="fa-solid fa-chart-line"></i> View My Posts</a>
+            <a href="/liked-posts" class="btn-user-posts"><i class="fa-regular fa-thumbs-up"></i> View My Likes</a>
+            <a href="/profile" class="btn-user-posts"><i class="fa-regular fa-user"></i> Manage Profile</a>
+        </div>
+        {{ end }}
+        <hr>
+        <h3>Categories</h3>
+        <div class="side-categoies">
+            {{range $category, $count := .Categories}}
+            <a href="#" class="category-link" data-category="{{$category}}">
+                <i class="fa-solid fa-laptop-code"></i> {{$category}}
+                <span>[ {{$count}} ]</span>
+            </a>
+            {{end}}
+        </div>
+        <hr>
+        <div class="jobs-section-header">
+            <h3><i class="fa-solid fa-briefcase"></i> <span class="jobs-text">Jobs</span></h3>
+            <i class="fa-solid fa-chevron-down jobs-toggle-icon"></i>
+        </div>
+        <div class="jobs-scrollable">
+            <a href="/jobs" class="btn-jobs-link"><i class="fa-solid fa-search"></i> Browse Jobs</a>
+            <a href="/create-job" class="btn-jobs-link"><i class="fa-solid fa-plus"></i> Post a Job</a>
+            <a href="/my-jobs" class="btn-jobs-link"><i class="fa-solid fa-list"></i> My Posted Jobs</a>
+            <a href="/my-applications" class="btn-jobs-link"><i class="fa-solid fa-paper-plane"></i> My Applications</a>
+        </div>
+        <hr>
+        <div class="chat-section-header">
+            <h3><i class="fa-solid fa-comments"></i> <span class="chat-text">Chats</span></h3>
+            <i class="fa-solid fa-chevron-down chat-toggle-icon"></i>
+        </div>
+        <div class="chat-users-scrollable">
+            {{range .Users}}
+            <a href="/chat?recipient_id={{.ID}}" class="chat-user-link">
+                <div class="user-status">
+                    <span class="status-indicator {{if .IsOnline}}online{{else}}offline{{end}}"></span>
+                    {{if .ProfileURL}}
+                    <img src="{{.ProfileURL}}" alt="Profile Picture" class="chat-profile-picture">
+                    {{else}}
+                    <i class="fa-regular fa-user"></i>
+                    {{end}}
+                    <span>{{.Username}}</span>
+                </div>
+            </a>
+            {{end}}
+        </div>
+    </div>
+    <div class="posts">
+        {{if .FlashMessage}}
+        <div class="flash-message">
+            {{.FlashMessage}}
+        </div>
+        {{end}}
+        <div class="create-actions">
+            <div class="create-buttons-container">
+                <a href="/create-post" class="btn-create-modern btn-create-post-modern">
+                    <div class="btn-icon">
+                        <i class="fa-solid fa-plus"></i>
+                    </div>
+                    <span class="btn-text">Post</span>
+                    <div class="btn-description">Share your thoughts</div>
+                </a>
+                {{if .IsLoggedIn}}
+                <a href="/create-question" class="btn-create-modern btn-create-question-modern">
+                    <div class="btn-icon">
+                        <i class="fa-solid fa-circle-question"></i>
+                    </div>
+                    <span class="btn-text">Question</span>
+                    <div class="btn-description">Ask the community</div>
+                </a>
+                {{end}}
+            </div>
+        </div>
+        {{if .SearchQuery}}
+        <div class="section-header">
+            <div class="section-icon">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <div class="section-content">
+                <h3 class="section-title">Search Results</h3>
+                <p class="section-subtitle">Results for "{{.SearchQuery}}"</p>
+            </div>
+        </div>
+        {{if not .Posts}}
+        <p>No posts found matching your search.</p>
+        {{end}}
+        {{else}}
+        <div class="section-header">
+            <div class="section-icon">
+                <i class="fa-solid fa-rss"></i>
+            </div>
+            <div class="section-content">
+                <h3 class="section-title">Latest</h3>
+                <p class="section-subtitle">Fresh discussions & insights</p>
+            </div>
+        </div>
+        {{end}}
+        {{range .Posts}}
+        <hr>
+        <div class="post-card" id="post-{{.ID}}">
+            <div class="profile">
+                <div class="avatar">
+                    {{if .AuthorProfileURL}}
+                    <img src="{{.AuthorProfileURL}}" alt="{{.Username}}'s profile" class="post-profile-picture">
+                    {{else}}
+                    <i class="fa-regular fa-user"></i>
+                    {{end}}
+                    <div class="avatar-name">
+                        <p class="username"><a href="/view-profile?username={{.Username}}">{{.Username}}</a></p>
+                        <p>{{.CreatedAtHuman}}</p>
+                    </div>
+                </div>
+                <div class="category-tag-container">
+                    <div class="category-tag">
+                        <ul>
+                            {{ if gt (len .CategoryArray) 1 }}
+                            <li>Multiple</li>
+                            {{ else }}
+                            {{ range .CategoryArray }}
+                            <li>{{ . }}</li>
+                            {{ end }}
+                            {{ end }}
+                        </ul>
+                    </div>
+                    {{if eq .UserID $.UserID}}
+                    <div class="post-options-menu">
+                        <button class="btn-options" aria-label="Post options">
+                            <i class="fa-solid fa-ellipsis"></i>
+                        </button>
+                        <div class="options-dropdown" style="display: none;">
+                            <a href="/edit-post?id={{.ID}}" class="dropdown-item">
+                                <i class="fa-regular fa-pen-to-square"></i> Edit
+                            </a>
+                            <form action="/delete-post?id={{.ID}}" method="POST">
+                                <button type="submit" class="dropdown-item">
+                                    <i class="fa-regular fa-trash-can"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+            <div class="post">
+                <a href="/view-post?id={{.ID}}">
+                    <h4>{{.Title}}</h4>
+                    {{if .ImageURL}}
+                    <div class="post-image">
+                        <img src="{{.ImageURL}}" alt="Post Image" class="post-image-preview" loading="lazy">
+                    </div>
+                    {{end}}
+                    <p>{{.Preview | html}}</p>
+                </a>
+                <div class="reaction">
+                    <i class="btn-like" data-id="{{.ID}}"><i class="fa-regular fa-thumbs-up"></i>
+                        <span>{{.Likes}}</span></i>
+                    <i class="btn-dislike" data-id="{{.ID}}"><i class="fa-regular fa-thumbs-down"></i>
+                        <span>{{.Dislikes}}</span></i>
+                    <i class="btn-comment" data-id="{{.ID}}"><i class="fa-regular fa-message"></i>
+                        <span>{{.CommentsCount}}</span></i>
+                    <div class="btn-share" data-content-type="post" data-content-id="{{.ID}}">
+                        <i class="fa-solid fa-share-nodes"></i>
+                        <span>Share</span>
+                    </div>
+                </div>
+                <div class="reaction-prompt-container" id="reaction-prompt-{{.ID}}" style="display: none;">
+                    {{if $.IsAuthenticated}}
+                    <div class="reaction-actions">
+                        <!-- Reaction actions will be handled by JavaScript -->
+                    </div>
+                    {{else}}
+                    <div class="guest-reaction-prompt">
+                        <p><a href="/login">Login</a> or <a href="/signup">Sign up</a> to like or dislike the discussion
+                        </p>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+        {{end}}
+        <div class="section-header qa-section-header">
+            <div class="section-icon">
+                <i class="fa-solid fa-circle-question"></i>
+            </div>
+            <div class="section-content">
+                <h3 class="section-title">Q&A</h3>
+                <p class="section-subtitle">Community questions & answers</p>
+            </div>
+        </div>
+        {{range .Questions}}
+        <hr>
+        <div class="post-card question-card" id="question-{{.ID}}">
+            <div class="profile">
+                <div class="avatar">
+                    {{if .AuthorProfileURL}}
+                    <img src="{{.AuthorProfileURL}}" alt="{{.Username}}'s profile" class="post-profile-picture">
+                    {{else}}
+                    <i class="fa-regular fa-user"></i>
+                    {{end}}
+                    <div class="avatar-name">
+                        <p class="username"><a href="/view-profile?username={{.Username}}">{{.Username}}</a></p>
+                        <p>{{.CreatedAtHuman}}</p>
+                    </div>
+                </div>
+                <div class="category-tag-container">
+                    <div class="category-tag">
+                        <ul>
+                            {{ if gt (len .CategoryArray) 1 }}
+                            <li>Multiple</li>
+                            {{ else }}
+                            {{ range .CategoryArray }}
+                            <li>{{ . }}</li>
+                            {{ end }}
+                            {{ end }}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="post">
+                <a href="/view-question?id={{.ID}}">
+                    <h4>{{.Title}}</h4>
+                    {{if .FileURL}}
+                    <div class="post-image">
+                        <img src="{{.FileURL}}" alt="Question Attachment" class="post-image-preview" loading="lazy"
+                            onerror="this.style.display='none'">
+                    </div>
+                    {{end}}
+                    <p>{{if .Content}}{{.Content | html}}{{else}}No description provided.{{end}}</p>
+                    <p><strong>Target Group:</strong> {{.TargetGroup}}</p>
+                </a>
+                <div class="reaction">
+                    <i class="btn-like-question" data-id="{{.ID}}"><i class="fa-regular fa-thumbs-up"></i>
+                        <span>{{.Likes}}</span></i>
+                    <i class="btn-dislike-question" data-id="{{.ID}}"><i class="fa-regular fa-thumbs-down"></i>
+                        <span>{{.Dislikes}}</span></i>
+                    <i class="btn-comment-question" data-id="{{.ID}}"><i class="fa-regular fa-message"></i>
+                        <span>{{.CommentsCount}}</span></i>
+                    <div class="btn-share" data-content-type="question" data-content-id="{{.ID}}">
+                        <i class="fa-solid fa-share-nodes"></i>
+                        <span>Share</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{end}}
+        <!-- DOCUMENT SECTION - ADDED AFTER QUESTIONS SECTION -->
+        <div class="section-header docs-section-header">
+            <div class="section-icon">
+                <i class="fa-solid fa-file-lines"></i>
+            </div>
+            <div class="section-content">
+                <h3 class="section-title">Documents</h3>
+                <p class="section-subtitle">Shared resources & templates</p>
+            </div>
+        </div>
+        {{range .Documents}}
+        <hr>
+        <div class="post-card document-card" id="document-{{.ID}}">
+            <div class="profile">
+                <div class="avatar">
+                    {{if .AuthorProfileURL}}
+                    <img src="{{.AuthorProfileURL}}" alt="{{.Username}}'s profile" class="post-profile-picture">
+                    {{else}}
+                    <i class="fa-regular fa-user"></i>
+                    {{end}}
+                    <div class="avatar-name">
+                        <p class="username"><a href="/view-profile?username={{.Username}}">{{.Username}}</a></p>
+                        <p>{{.CreatedAtHuman}}</p>
+                    </div>
+                </div>
+                <div class="document-tags-container">
+                    <div class="document-tags">
+                        <ul>
+                            {{ if gt (len .TagsArray) 1 }}
+                            <li>Multiple tags</li>
+                            {{ else if eq (len .TagsArray) 1 }}
+                            {{ range .TagsArray }}
+                            <li>{{ . }}</li>
+                            {{ end }}
+                            {{ else }}
+                            <li>Untagged</li>
+                            {{ end }}
+                        </ul>
+                    </div>
+                    {{if eq .UserID $.UserID}}
+                    <div class="document-options-menu">
+                        <button class="btn-options" aria-label="Document options">
+                            <i class="fa-solid fa-ellipsis"></i>
+                        </button>
+                        <div class="options-dropdown" style="display: none;">
+                            <form action="/delete-document?id={{.ID}}" method="POST">
+                                <button type="submit" class="dropdown-item">
+                                    <i class="fa-regular fa-trash-can"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+            <div class="post document">
+                <a href="/view-document?id={{.ID}}">
+                    <div class="document-header">
+                        <div class="document-icon">
+                            {{if eq .FileType "pdf"}}
+                            <i class="fa-regular fa-file-pdf document-icon-pdf"></i>
+                            {{else if eq .FileType "word"}}
+                            <i class="fa-regular fa-file-word document-icon-word"></i>
+                            {{else if eq .FileType "excel"}}
+                            <i class="fa-regular fa-file-excel document-icon-excel"></i>
+                            {{else if eq .FileType "powerpoint"}}
+                            <i class="fa-regular fa-file-powerpoint document-icon-powerpoint"></i>
+                            {{else if eq .FileType "image"}}
+                            <i class="fa-regular fa-file-image document-icon-image"></i>
+                            {{else if eq .FileType "video"}}
+                            <i class="fa-regular fa-file-video document-icon-video"></i>
+                            {{else if eq .FileType "audio"}}
+                            <i class="fa-regular fa-file-audio document-icon-audio"></i>
+                            {{else if eq .FileType "archive"}}
+                            <i class="fa-regular fa-file-archive document-icon-archive"></i>
+                            {{else}}
+                            <i class="fa-regular fa-file document-icon-other"></i>
+                            {{end}}
+                        </div>
+                        <h4>{{.Title}}</h4>
+                    </div>
+                    {{if .Description}}
+                    <p>{{.Description}}</p>
+                    {{else}}
+                    <p class="no-description">No description provided</p>
+                    {{end}}
+                    <div class="document-meta">
+                        <span class="document-version">Version {{.Version}}</span>
+                        <span class="document-downloads"><i class="fa-solid fa-download"></i> {{.DownloadCount}} downloads</span>
+                    </div>
+                </a>
+                <div class="reaction">
+                    <i class="btn-like-document" data-id="{{.ID}}"><i class="fa-regular fa-thumbs-up"></i>
+                        <span>{{.Likes}}</span></i>
+                    <i class="btn-dislike-document" data-id="{{.ID}}"><i class="fa-regular fa-thumbs-down"></i>
+                        <span>{{.Dislikes}}</span></i>
+                    <i class="btn-comment-document" data-id="{{.ID}}"><i class="fa-regular fa-message"></i>
+                        <span>{{.CommentsCount}}</span></i>
+                    <div class="btn-share" data-content-type="document" data-content-id="{{.ID}}">
+                        <i class="fa-solid fa-share-nodes"></i>
+                        <span>Share</span>
+                    </div>
+                    <div class="btn-download" data-url="{{.FileURL}}"><i class="fa-solid fa-download"></i></div>
+                </div>
+            </div>
+        </div>
+        {{end}}
+        <!-- END OF DOCUMENT SECTION -->
+    </div>
+    <div class="right-sidebar">
+        <!-- ADMIN PANEL SECTION - PRIORITY PLACEMENT AT TOP -->
+        {{if and .IsLoggedIn (eq .User.Role "admin")}}
+        <div class="sidebar-section admin-section">
+            <h3><i class="fa-solid fa-shield-halved"></i> Admin Panel</h3>
+            <div class="admin-links">
+                <a href="/admin/social-settings" class="admin-link">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    <span>Social Integration</span>
+                </a>
+                <a href="/admin/newsletters" class="admin-link">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span>Send Newsletter</span>
+                </a>
+                <a href="/admin/dashboard" class="admin-link">
+                    <i class="fa-solid fa-tachometer-alt"></i>
+                    <span>Admin Dashboard</span>
+                </a>
+            </div>
+        </div>
+        {{end}}
+
+        <!-- NEWSLETTER SIGNUP FOR NON-ADMIN USERS -->
+        {{if and .IsLoggedIn (ne .User.Role "admin")}}
+        <div class="sidebar-section">
+            <div class="newsletter-signup">
+                <h4><i class="fa-solid fa-envelope"></i> Stay Updated</h4>
+                <p>Get the latest community updates and insights delivered to your inbox.</p>
+                <a href="/notification-preferences" class="btn-subscribe">
+                    <i class="fa-solid fa-bell"></i> Manage Notifications
+                </a>
+            </div>
+        </div>
+        {{end}}
+
+        <div class="sidebar-section">
+            <h3><i class="fa-solid fa-chart-line"></i> Evaluation Trends</h3>
+            <div class="trending-topics">
+                <div class="topic">
+                    <span class="topic-rank">#1</span>
+                    <span class="topic-name">Digital M&E Tools</span>
+                    <span class="topic-count">2.5k</span>
+                </div>
+                <div class="topic">
+                    <span class="topic-rank">#2</span>
+                    <span class="topic-name">Impact Assessment</span>
+                    <span class="topic-count">1.8k</span>
+                </div>
+                <div class="topic">
+                    <span class="topic-rank">#3</span>
+                    <span class="topic-name">Data Visualization</span>
+                    <span class="topic-count">1.3k</span>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <h3><i class="fa-solid fa-clipboard-list"></i> Project Updates</h3>
+            <div class="activity-feed">
+                <div class="activity-item">
+                    <i class="fa-solid fa-chart-bar"></i>
+                    <div class="activity-content">
+                        <p><strong>Sarah</strong> published <a href="#">M&E Framework 2025</a></p>
+                        <span class="activity-time">2 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <i class="fa-solid fa-file-lines"></i>
+                    <div class="activity-content">
+                        <p><strong>Mike</strong> updated <a href="#">Impact Indicators Guide</a></p>
+                        <span class="activity-time">1 day ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <i class="fa-solid fa-lightbulb"></i>
+                    <div class="activity-content">
+                        <p><strong>Alex</strong> shared insights on <a href="#">Theory of Change</a></p>
+                        <span class="activity-time">2 days ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Replace the "Expert Evaluators" section in dashboard.html with this enhanced version -->
+        <div class="sidebar-section community-section">
+            <div class="sidebar-section-header">
+                <h3><i class="fa-solid fa-award"></i> <span class="expert-text">Expert Evaluators</span></h3>
+                <i class="fa-solid fa-chevron-down expert-toggle-icon collapsed"></i>
+            </div>
+            <div class="community-content">
+                <!-- Leaderboard -->
+                <div class="community-subsection">
+                    <h4><i class="fa-solid fa-trophy"></i> Top Contributors</h4>
+                    <div class="leaderboard" id="leaderboard-container">
+                        <div class="loading-placeholder">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Loading...
+                        </div>
+                    </div>
+                </div>
+                <!-- Recent Achievements -->
+                <div class="community-subsection">
+                    <h4><i class="fa-solid fa-medal"></i> Recent Achievements</h4>
+                    <div class="recent-badges" id="recent-badges-container">
+                        <div class="loading-placeholder">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Loading...
+                        </div>
+                    </div>
+                </div>
+                <!-- User Level Progress -->
+                {{if .IsLoggedIn}}
+                <div class="community-subsection">
+                    <h4><i class="fa-solid fa-chart-line"></i> Your Progress</h4>
+                    <div class="user-progress" id="user-progress-container">
+                        <div class="loading-placeholder">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Loading...
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+                <!-- Community Stats -->
+                <div class="community-subsection">
+                    <h4><i class="fa-solid fa-users"></i> Community</h4>
+                    <div class="community-stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-value" id="total-members">1.9k</span>
+                            <span class="stat-label">Members</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="total-contributions">15.2k</span>
+                            <span class="stat-label">Contributions</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value" id="badges-awarded">540</span>
+                            <span class="stat-label">Badges Earned</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <h3><i class="fa-solid fa-tachometer-alt"></i> Platform Metrics</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-value">5.8k</span>
+                    <span class="stat-label">Evaluations</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">9.4k</span>
+                    <span class="stat-label">Insights</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">1.9k</span>
+                    <span class="stat-label">Experts</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">450</span>
+                    <span class="stat-label">Projects</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">89%</span>
+                    <span class="stat-label">Success Rate</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">24/7</span>
+                    <span class="stat-label">Support</span>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <h3><i class="fa-solid fa-bullhorn"></i> M&E News</h3>
+            <div class="announcement">
+                <p class="announcement-title">📊 New Dashboard Released!</p>
+                <p class="announcement-text">Enhanced analytics and real-time monitoring capabilities now available.</p>
+                <span class="announcement-date">3 days ago</span>
+            </div>
+            <div class="announcement">
+                <p class="announcement-title">🚀 Framework Update</p>
+                <p class="announcement-text">Updated evaluation methodologies based on latest OECD-DAC standards.</p>
+                <span class="announcement-date">1 week ago</span>
+            </div>
+        </div>
+        <!-- DOCUMENT REPOSITORY SECTION - ADDED AFTER M&E NEWS SECTION -->
+        <div class="sidebar-section document-repository-section">
+            <div class="sidebar-section-header">
+                <h3><i class="fa-solid fa-file-lines"></i> <span class="document-text">Document Repository</span></h3>
+                <i class="fa-solid fa-chevron-down document-toggle-icon"></i>
+            </div>
+            <div class="document-repository-content">
+                <!-- Upload Form -->
+                <div class="document-upload">
+                    <button class="upload-btn" id="open-document-upload"><i class="fa-solid fa-upload"></i> Upload Document</button>
+                    <p class="upload-help">Share reports, templates, and resources</p>
+                </div>
+                
+                <!-- Recent Documents -->
+                <div class="recent-documents">
+                    <h4><i class="fa-solid fa-clock-rotate-left"></i> Recent Documents</h4>
+                    <div class="documents-list" id="recent-documents-container">
+                        <div class="loading-placeholder">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Loading...
+                        </div>
+                    </div>
+                    <div class="view-all-documents">
+                        <a href="/documents" class="btn-view-all"><i class="fa-solid fa-folder-open"></i> View All Documents</a>
+                    </div>
+                </div>
+                
+                <!-- Document Stats -->
+                <div class="document-stats">
+                    <div class="stat-item">
+                        <span class="stat-value" id="total-documents">0</span>
+                        <span class="stat-label">Documents</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="total-downloads">0</span>
+                        <span class="stat-label">Downloads</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END OF DOCUMENT REPOSITORY SECTION -->
+        <div class="sidebar-section">
+            <h3><i class="fa-solid fa-network-wired"></i> Connect</h3>
+            <div class="social-links">
+                <a href="#" class="social-link" title="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+                <a href="#" class="social-link" title="GitHub"><i class="fa-brands fa-github"></i></a>
+                <a href="#" class="social-link" title="Slack"><i class="fa-brands fa-slack"></i></a>
+                <a href="#" class="social-link" title="Email"><i class="fa-solid fa-envelope"></i></a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- DOCUMENT UPLOAD MODAL - ADDED AT THE END BEFORE CLOSING TAG -->
+<div id="document-upload-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Upload Document</h2>
+        <form action="/upload-document" method="POST" enctype="multipart/form-data" id="document-upload-form">
+            <div class="form-group">
+                <label for="title">Title*</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="tags">Tags (comma separated)</label>
+                <input type="text" id="tags" name="tags" placeholder="e.g. report, template, guide">
+            </div>
+            <div class="form-group">
+                <label for="document">File*</label>
+                <input type="file" id="document" name="document" required>
+                <p class="file-info">Max size: 25MB. Supported formats: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, etc.</p>
+            </div>
+            <button type="submit" class="btn-upload">Upload Document</button>
+        </form>
+    </div>
+</div>
+<!-- END OF DOCUMENT UPLOAD MODAL -->
+{{end}}

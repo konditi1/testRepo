@@ -1,0 +1,87 @@
+{{define "signup"}}
+{{template "header" .}}
+<section class="signup-container">
+    {{if .Error}}
+    <div class="error-message">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        {{.Error}}
+    </div>
+    {{end}}
+    <div class="title">
+        <i class="fa-solid fa-user-plus"></i>
+        <h2>Create your account</h2>
+        <p>Already have an account? <span><a href="/login"> Sign in</a></span></p>
+    </div>
+
+    <form action="/signup" method="POST" class="signup-form" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="email">Email address:</label>
+            <input type="text" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="first_name">First Name:</label>
+            <input type="text" id="first_name" name="first_name" required>
+        </div>
+        <div class="form-group">
+            <label for="last_name">Last Name:</label>
+            <input type="text" id="last_name" name="last_name" required>
+        </div>
+        <div class="form-group">
+            <label for="affiliation">Affiliation:</label>
+            <input type="text" id="affiliation" name="affiliation" placeholder="e.g., University of Nairobi, UNICEF">
+        </div>
+        <div class="form-group">
+            <label for="bio">Bio:</label>
+            <textarea id="bio" name="bio" rows="4" placeholder="Tell us about yourself and your M&E experience"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="years_experience">Years of Experience:</label>
+            <input type="number" id="years_experience" name="years_experience" min="0" max="50" placeholder="e.g., 5">
+        </div>
+        <div class="form-group">
+            <label for="core_competencies">Core Competencies:</label>
+            <input type="text" id="core_competencies" name="core_competencies" placeholder="e.g., Data Analysis, Impact Evaluation, Survey Design">
+            <small>Enter skills separated by commas</small>
+        </div>
+        <div class="form-group">
+            <label for="profile">Upload Profile Picture:</label>
+            <input type="file" id="profile" name="profile" accept="image/*">
+        </div>
+        <div class="form-group">
+            <label for="cv">Upload CV (PDF):</label>
+            <input type="file" id="cv" name="cv" accept="application/pdf">
+        </div>
+        <div class="form-group">
+            <label for="expertise">Expertise Level:</label>
+            <select name="expertise" id="expertise" required>
+                <!-- <option value="none">Select Expertise</option> -->
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+            </select>
+        </div>
+        <!-- Role is hidden and set to 'user' for security -->
+        <input type="hidden" name="role" value="user">
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <div class="password-input-container">
+                <input type="password" id="password" name="password" required>
+                <i class="fa-regular fa-eye-slash toggle-password" id="togglePassword"></i>
+            </div>
+            <!-- Progress Bar for password strength -->
+            <div id="strength-bar" class="strength-bar">
+                <div id="strength-meter" class="strength-meter"></div>
+            </div>
+            <div id="strength-text" class="strength-text">Weak</div>
+            <small class="password-hint">
+                Password must be at least 8 characters long and include uppercase, lowercase, a number, and a special character.
+            </small>
+        </div>
+        <button type="submit" class="btn-login">Create account</button>
+    </form>
+</section>
+{{end}}

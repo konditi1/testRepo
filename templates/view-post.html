@@ -1,0 +1,145 @@
+{{define "view-post"}}
+{{template "header" .}}
+<section class="view-post-container">
+    <div class="sidebar">
+        <h3>Discover</h3>
+        <div class="sidebar-links">
+            <a href="#"><i class="fa-solid fa-spinner"></i>&emsp;Trending</a>
+            <a href="#"><i class="fa-regular fa-clock"></i>&emsp;Latest</a>
+            <a href="#"><i class="fa-regular fa-star"></i>&emsp;Top</a>
+            <a href="#"><i class="fa-solid fa-chart-line"></i>&emsp;My Activities</a>
+        </div>
+        <h3>Categories</h3>
+        <div class="side-categoies">
+            {{range $category, $count := .Categories}}
+                <a href="#"><i class="fa-solid fa-laptop-code"></i>&emsp;{{$category}}<span>[ {{$count}} ]</span></a>
+            {{end}}
+        </div>
+    </div>
+    <div class="posts post-container">
+        <div class="post-header">
+            <h3>{{.Post.Title}}</h3>
+            <p>By <strong>{{.Post.Username}}</strong> in <strong>{{.Post.Category}}</strong></p>
+            <p>Posted on {{.Post.CreatedAtHuman}}</p>
+        </div>
+        <div class="post-content">
+            {{if .Post.ImageURL}}
+            <img src="{{.Post.ImageURL}}" alt="Post Image" class="post-image-full">
+            {{end}}
+            <p>{{.Post.Content | html}}</p>
+        </div>
+        <div class="post-footer">
+            <div class="post-actions">
+                {{if .IsAuthenticated}}
+                    <div class="reaction">
+                        <i class="btn-like" data-id="{{.Post.ID}}">
+                            <i class="fa-regular fa-thumbs-up"></i> 
+                            <span>{{.Post.Likes}}</span>
+                        </i>
+                        <i class="btn-dislike" data-id="{{.Post.ID}}">
+                            <i class="fa-regular fa-thumbs-down"></i> 
+                            <span>{{.Post.Dislikes}}</span>
+                        </i>
+                        <i class="btn-comment" data-id="{{.Post.ID}}">
+                            <i class="fa-regular fa-message"></i> 
+                            <span>{{.Post.CommentsCount}}</span>
+                        </i>
+                        <i class="fa-solid fa-share-nodes"></i>
+                    </div>
+                {{else}}
+                    <div class="guest-reaction">
+                        <a href="/login" class="reaction-link">
+                        <i class="guest-post-like-reaction">
+                            <i class="fa-regular fa-thumbs-up"></i> 
+                            <span>{{.Post.Likes}}</span>
+                        </i>
+                        <i class="guest-post-dislike-reaction">
+                            <i class="fa-regular fa-thumbs-down"></i> 
+                            <span>{{.Post.Dislikes}}</span>
+                        </i>
+                        <i class="guest-post-comment-reaction">
+                            <i class="fa-regular fa-message"></i> 
+                            <span>{{.Post.CommentsCount}}</span>
+                        </i>
+                        <i class="guest-post-share">
+                            <i class="fa-solid fa-share-nodes"></i>
+                        </i>
+                        </a>
+                    </div>
+                {{end}}
+            </div>
+
+            <div class="comments-section">
+                <h3>Comments (<span class="comments-count">{{len .Comments}}</span>)</h3>
+                {{if .IsAuthenticated}}
+                    <form action="/add-comment?post_id={{.Post.ID}}" method="POST" class="comment-form">
+                        <textarea name="comment" placeholder="Write your comment..." required></textarea>
+                        <button type="submit" class="btn-submit-comment">Post Comment</button>
+                    </form>
+                {{else}}
+                    <div class="guest-comment-prompt">
+                        <p><a href="/login">Login</a> or <a href="/signup">Sign up</a> to join the discussion</p>
+                    </div>
+                {{end}}
+
+                <!-- Comments List -->
+                <div class="comments-list">
+                    {{if .Comments}}
+                        {{range .Comments}}
+                        <div class="comment" id="comment-{{.ID}}">
+                            <div class="comment-header">
+                                <div class="comment-user">
+                                    <i class="fa-regular fa-user"></i>
+                                    <span class="username">{{.Username}}</span>
+                                </div>
+                                <span class="comment-time">{{.CreatedAtHuman}}</span>
+                            </div>
+                            <div class="comment-content">
+                                <p>{{.Content}}</p>
+                            </div>
+                            <div class="comment-footer">
+                                {{if $.IsAuthenticated}}
+                                    <div class="comment-reactions">
+                                        <i class="btn-like-comment" data-id="{{.ID}}">
+                                            <i class="fa-regular fa-thumbs-up"></i>
+                                            <span>{{.Likes}}</span>
+                                        </i>
+                                        <i class="btn-dislike-comment" data-id="{{.ID}}">
+                                            <i class="fa-regular fa-thumbs-down"></i>
+                                            <span>{{.Dislikes}}</span>
+                                        </i>
+                                    </div>
+                                {{else}}
+                                    <div class="guest-comment-reactions">
+                                        <a href="/login" class="reaction-link">
+                                            <i class="btn-like-comment">
+                                            <i class="fa-regular fa-thumbs-up"></i>
+                                            <span>{{.Likes}}</span>
+                                        </i>
+                                        <i class="btn-dislike-comment">
+                                            <i class="fa-regular fa-thumbs-down"></i>
+                                            <span>{{.Dislikes}}</span>
+                                        </i>
+                                        </a>
+                                    </div>
+                                {{end}}
+                                {{if and $.IsAuthenticated (eq .UserID $.UserID)}}
+                                    <div class="comment-actions">
+                                        <button class="btn-edit-comment" data-id="{{.ID}}">Edit</button>
+                                        <button class="btn-delete-comment" data-id="{{.ID}}">Delete</button>
+                                    </div>
+                                {{end}}
+                            </div>
+                        </div>
+                        {{end}}
+                    {{else}}
+                        <div class="no-comments">
+                            <p>No comments yet.</p>
+                        </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{{end}}

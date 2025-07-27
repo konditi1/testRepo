@@ -1,0 +1,74 @@
+{{define "notifications"}}
+{{template "header" .}}
+<link rel="stylesheet" href="/static/css/notifications.css">
+
+<section class="notifications-container">
+    <div class="notifications-header">
+        <h2><i class="fa-solid fa-bell"></i> Notifications</h2>
+        <div class="notifications-actions">
+            <button id="mark-all-read" class="btn-mark-all">
+                <i class="fa-solid fa-check-double"></i> Mark All Read
+            </button>
+            <a href="/notification-preferences" class="btn-preferences">
+                <i class="fa-solid fa-gear"></i> Preferences
+            </a>
+        </div>
+    </div>
+
+    <div class="notifications-list" id="notifications-list">
+        {{if .Notifications}}
+            {{range .Notifications}}
+            <div class="notification-item {{if not .Read}}unread{{end}}" data-id="{{.ID}}">
+                <div class="notification-icon" style="color: {{.Color}}">
+                    <i class="{{.Icon}}"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-header">
+                        <h4>{{.Title}}</h4>
+                        <span class="notification-time">{{.CreatedAtHuman}}</span>
+                    </div>
+                    <p class="notification-message">{{.Message}}</p>
+                    {{if .ActorUsername}}
+                    <div class="notification-actor">
+                        {{if .ActorProfileURL}}
+                        <img src="{{.ActorProfileURL}}" alt="{{.ActorUsername}}" class="actor-avatar">
+                        {{else}}
+                        <i class="fa-regular fa-user actor-avatar-icon"></i>
+                        {{end}}
+                        <span>{{.ActorUsername}}</span>
+                    </div>
+                    {{end}}
+                </div>
+                <div class="notification-actions">
+                    {{if .ActionURL}}
+                    <a href="{{.ActionURL}}" class="btn-view">
+                        <i class="fa-solid fa-eye"></i> View
+                    </a>
+                    {{end}}
+                    {{if not .Read}}
+                    <button class="btn-mark-read" data-id="{{.ID}}">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+        {{else}}
+            <div class="no-notifications">
+                <i class="fa-solid fa-bell-slash"></i>
+                <h3>No notifications yet</h3>
+                <p>You'll see notifications here when there's activity related to your content.</p>
+            </div>
+        {{end}}
+    </div>
+
+    <div class="load-more-container" {{if lt (len .Notifications) 20}}style="display: none;"{{end}}>
+        <button id="load-more" class="btn-load-more">
+            <i class="fa-solid fa-chevron-down"></i> Load More
+        </button>
+    </div>
+</section>
+
+<script src="/static/js/notifications.js" defer></script>
+{{template "footer" .}}
+{{end}}

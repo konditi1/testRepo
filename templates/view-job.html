@@ -1,0 +1,138 @@
+{{define "view-job"}}
+{{template "header" .}}
+<section class="view-post-container">
+    <div class="post-container">
+        {{if .Success}}
+        <div class="success-alert">
+            <i class="fa-solid fa-check-circle"></i>
+            Application submitted successfully!
+        </div>
+        {{end}}
+        
+        <div class="job-details">
+            <div class="job-header">
+                <div>
+                    <h1>{{.Job.Title}}</h1>
+                    <div class="company-info">
+                        <i class="fa-solid fa-building"></i>
+                        {{if .Job.EmployerCompany}}{{.Job.EmployerCompany}}{{else}}{{.Job.EmployerUsername}}{{end}}
+                        • {{.Job.Location}}
+                    </div>
+                </div>
+                <span class="status-badge {{.Job.Status}}">{{.Job.Status}}</span>
+            </div>
+            
+            <div class="job-meta">
+                <div class="job-meta-item">
+                    <i class="fa-solid fa-clock"></i>
+                    <strong>{{.Job.EmploymentType}}</strong>
+                </div>
+                {{if .Job.SalaryRange}}
+                <div class="job-meta-item">
+                    <i class="fa-solid fa-dollar-sign"></i>
+                    <strong>{{.Job.SalaryRange}}</strong>
+                </div>
+                {{end}}
+                <div class="job-meta-item">
+                    <i class="fa-solid fa-calendar"></i>
+                    <strong>Posted {{.Job.CreatedAtHuman}}</strong>
+                </div>
+                <div class="job-meta-item">
+                    <i class="fa-solid fa-hourglass-end"></i>
+                    <strong>Apply by {{.Job.DeadlineHuman}}</strong>
+                </div>
+            </div>
+            
+            <div class="job-section">
+                <h3>Job Description</h3>
+                <p>{{.Job.Description}}</p>
+            </div>
+            
+            {{if .Job.Responsibilities}}
+            <div class="job-section">
+                <h3>Key Responsibilities</h3>
+                <p>{{.Job.Responsibilities}}</p>
+            </div>
+            {{end}}
+            
+            {{if .Job.Requirements}}
+            <div class="job-section">
+                <h3>Requirements & Qualifications</h3>
+                <p>{{.Job.Requirements}}</p>
+            </div>
+            {{end}}
+            
+            <div class="job-actions">
+                <div>
+                    <i class="fa-solid fa-users"></i>
+                    {{.Job.ApplicationsCount}} application{{if ne .Job.ApplicationsCount 1}}s{{end}} received
+                </div>
+                <div>
+                    {{if not .Job.IsOwner}}
+                        {{if .Job.HasApplied}}
+                            <button class="btn-apply" disabled>Already Applied</button>
+                        {{else}}
+                            <a href="/apply-job?id={{.Job.ID}}" class="btn-apply">Apply Now</a>
+                        {{end}}
+                    {{end}}
+                    <a href="/jobs" class="btn-view">Back to Jobs</a>
+                </div>
+            </div>
+        </div>
+        
+        {{if .Job.IsOwner}}
+        {{if .Applications}}
+        <div class="applications-list">
+            <h2><i class="fa-solid fa-users"></i> Applications ({{len .Applications}})</h2>
+            {{range .Applications}}
+            <div class="application-item">
+                <div class="applicant-info">
+                    <div class="applicant-details">
+                        <h4>{{.ApplicantName}}</h4>
+                        <div class="applicant-email">{{.ApplicantEmail}}</div>
+                        <div style="color: var(--secondary-color); font-size: 0.85rem; margin-top: 5px;">
+                            Applied {{.AppliedAtHuman}}
+                        </div>
+                    </div>
+                    <span class="status-badge {{.Status}}">{{.Status}}</span>
+                </div>
+                
+                <div class="cover-letter">
+                    <h5>Cover Letter</h5>
+                    <p>{{.CoverLetter}}</p>
+                </div>
+                
+                <div class="file-links">
+                    {{if .ApplicantCVURL}}
+                    <a href="{{.ApplicantCVURL}}" target="_blank" class="file-link">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        View CV
+                    </a>
+                    {{end}}
+                    {{if .ApplicationLetterURL}}
+                    <a href="{{.ApplicationLetterURL}}" target="_blank" class="file-link">
+                        <i class="fa-solid fa-file-text"></i>
+                        Application Letter
+                    </a>
+                    {{end}}
+                    <a href="/view-profile?username={{.ApplicantUsername}}" class="file-link">
+                        <i class="fa-solid fa-user"></i>
+                        View Profile
+                    </a>
+                </div>
+            </div>
+            {{end}}
+        </div>
+        {{else}}
+        <div class="applications-list">
+            <div class="empty-state">
+                <i class="fa-solid fa-inbox"></i>
+                <h3>No Applications Yet</h3>
+                <p>Applications will appear here once candidates start applying.</p>
+            </div>
+        </div>
+        {{end}}
+        {{end}}
+    </div>
+</section>
+{{end}}

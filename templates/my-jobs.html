@@ -1,0 +1,85 @@
+{{define "my-jobs"}}
+{{template "header" .}}
+<section class="dash-container">
+    <div class="posts">
+        <div class="section-header">
+            <div class="section-icon">
+                <i class="fa-solid fa-list"></i>
+            </div>
+            <div class="section-content">
+                <h3 class="section-title">My Posted Jobs</h3>
+                <p class="section-subtitle">Manage your job postings and applications</p>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 30px;">
+            <a href="/create-job" class="btn-apply">
+                <i class="fa-solid fa-plus"></i>
+                Post New Job
+            </a>
+        </div>
+
+        {{if .Jobs}}
+            {{range .Jobs}}
+            <div class="job-card">
+                <div class="job-header">
+                    <div>
+                        <a href="/view-job?id={{.ID}}" class="job-title">{{.Title}}</a>
+                        <div class="job-company">{{.Location}}</div>
+                    </div>
+                    <span class="status-badge {{.Status}}">{{.Status}}</span>
+                </div>
+                
+                <div class="job-meta">
+                    <div class="job-meta-item">
+                        <i class="fa-solid fa-clock"></i>
+                        <span>{{.EmploymentType}}</span>
+                    </div>
+                    {{if .SalaryRange}}
+                    <div class="job-meta-item">
+                        <i class="fa-solid fa-dollar-sign"></i>
+                        <span>{{.SalaryRange}}</span>
+                    </div>
+                    {{end}}
+                    <div class="job-meta-item">
+                        <i class="fa-solid fa-calendar"></i>
+                        <span>Posted {{.CreatedAtHuman}}</span>
+                    </div>
+                    <div class="job-meta-item">
+                        <i class="fa-solid fa-hourglass-end"></i>
+                        <span>Deadline: {{.DeadlineHuman}}</span>
+                    </div>
+                </div>
+                
+                <div class="job-description">
+                    {{if gt (len .Description) 200}}
+                        {{slice .Description 0 200}}...
+                    {{else}}
+                        {{.Description}}
+                    {{end}}
+                </div>
+                
+                <div class="job-actions">
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <div style="color: var(--secondary-color);">
+                            <i class="fa-solid fa-users"></i>
+                            {{.ApplicationsCount}} application{{if ne .ApplicationsCount 1}}s{{end}}
+                        </div>
+                    </div>
+                    <div>
+                        <a href="/view-job?id={{.ID}}" class="btn-apply">View & Manage</a>
+                    </div>
+                </div>
+            </div>
+            {{end}}
+        {{else}}
+            <div class="empty-state">
+                <i class="fa-solid fa-briefcase"></i>
+                <h3>No Jobs Posted Yet</h3>
+                <p>Start recruiting top M&E talent by posting your first job opportunity.</p>
+                <a href="/create-job" class="btn-apply">Post Your First Job</a>
+            </div>
+        {{end}}
+    </div>
+</section>
+{{end}}

@@ -1,0 +1,27 @@
+basePath: /api/v1
+host: localhost:9000
+info:
+  contact:
+    email: api-support@evalhub.com
+    name: EvalHub API Support
+    url: https://evalhub.com/support
+  description: Enterprise API for EvalHub platform with role-based security
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: https://evalhub.com/terms
+  title: EvalHub API
+  version: 1.0.0
+paths: {}
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+  SessionAuth:
+    description: Session-based authentication cookie
+    in: cookie
+    name: session_token
+    type: apiKey
+swagger: "2.0"

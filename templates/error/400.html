@@ -1,0 +1,17 @@
+{{define "400"}}
+{{template "header" .}}
+<div class="error-page">
+    <div class="error-container">
+        <div class="error-icon">
+            <i class="fa-solid fa-circle-exclamation"></i>
+        </div>
+        <h1>400 - Bad Request</h1>
+        <p>The request could not be processed. Please check your input and try again.</p>
+        <div class="error-actions">
+            <a href="javascript:window.history.back();" class="btn-return-home">
+                <i class="fa-solid fa-arrow-left"></i> Go Back
+            </a>
+        </div>
+    </div>
+</div>
+{{end}}

@@ -1,0 +1,99 @@
+{{define "my-applications"}}
+{{template "header" .}}
+<section class="dash-container">
+    <div class="posts">
+        <div class="section-header">
+            <div class="section-icon">
+                <i class="fa-solid fa-paper-plane"></i>
+            </div>
+            <div class="section-content">
+                <h3 class="section-title">My Applications</h3>
+                <p class="section-subtitle">Track the status of your job applications</p>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 30px;">
+            <a href="/jobs" class="btn-apply">
+                <i class="fa-solid fa-search"></i>
+                Browse More Jobs
+            </a>
+        </div>
+
+        {{if .Applications}}
+            {{range .Applications}}
+            <div class="application-card">
+                <div class="application-header">
+                    <div class="application-info">
+                        <h3>{{.JobTitle}}</h3>
+                        <div class="application-company">
+                            <i class="fa-solid fa-building"></i>
+                            {{if .EmployerCompany}}{{.EmployerCompany}}{{else}}{{.EmployerUsername}}{{end}}
+                        </div>
+                    </div>
+                    <span class="status-badge {{.Status}}">{{.Status}}</span>
+                </div>
+                
+                <div class="application-meta">
+                    <div class="job-meta-item">
+                        <i class="fa-solid fa-calendar"></i>
+                        <span>Applied {{.AppliedAtHuman}}</span>
+                    </div>
+                    {{if .ReviewedAtHuman}}
+                    <div class="job-meta-item">
+                        <i class="fa-solid fa-eye"></i>
+                        <span>Reviewed {{.ReviewedAtHuman}}</span>
+                    </div>
+                    {{end}}
+                    <div class="job-meta-item">
+                        <i class="fa-solid fa-envelope"></i>
+                        <span>{{.EmployerUsername}}</span>
+                    </div>
+                </div>
+                
+                <div class="application-actions">
+                    <a href="/view-job?id={{.JobID}}" class="btn-view">View Job Details</a>
+                    {{if eq .Status "pending"}}
+                    <span style="color: var(--secondary-color); font-size: 0.9rem;">
+                        <i class="fa-solid fa-clock"></i>
+                        Awaiting review
+                    </span>
+                    {{else if eq .Status "reviewed"}}
+                    <span style="color: #17a2b8; font-size: 0.9rem;">
+                        <i class="fa-solid fa-check"></i>
+                        Application reviewed
+                    </span>
+                    {{else if eq .Status "shortlisted"}}
+                    <span style="color: #007bff; font-size: 0.9rem;">
+                        <i class="fa-solid fa-star"></i>
+                        You've been shortlisted!
+                    </span>
+                    {{else if eq .Status "interviewed"}}
+                    <span style="color: #6c757d; font-size: 0.9rem;">
+                        <i class="fa-solid fa-handshake"></i>
+                        Interview completed
+                    </span>
+                    {{else if eq .Status "accepted"}}
+                    <span style="color: #28a745; font-size: 0.9rem;">
+                        <i class="fa-solid fa-check-circle"></i>
+                        Congratulations! Offer received
+                    </span>
+                    {{else if eq .Status "rejected"}}
+                    <span style="color: #dc3545; font-size: 0.9rem;">
+                        <i class="fa-solid fa-times-circle"></i>
+                        Application not successful
+                    </span>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+        {{else}}
+            <div class="empty-state">
+                <i class="fa-solid fa-inbox"></i>
+                <h3>No Applications Yet</h3>
+                <p>Start your career journey by applying to M&E opportunities that match your expertise.</p>
+                <a href="/jobs" class="btn-apply">Browse Jobs</a>
+            </div>
+        {{end}}
+    </div>
+</section>
+{{end}}

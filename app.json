@@ -1,0 +1,19 @@
+{
+    "name": "EvalHub",
+    "description": "A chat application built with Go and PostgreSQL",
+    "website": "https://melconnect.global",
+    "repository": "https://github.com/konditi1/evalhub",
+    "keywords": ["go", "melconnect", "postgresql"],
+    "addons": ["heroku-postgresql:mini"],
+    "buildpacks": [
+      {
+        "url": "heroku/go"
+      }
+    ],
+    "env": {
+      "GO_ENV": {
+        "description": "The environment config for the application",
+        "value": "production"
+      }
+    }
+  }

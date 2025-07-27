@@ -1,0 +1,17 @@
+{{define "405"}}
+{{template "header" .}}
+<div class="error-page">
+    <div class="error-container">
+        <div class="error-icon">
+            <i class="fa-solid fa-circle-exclamation"></i>
+        </div>
+        <h1>405 - Method Not Allowed</h1>
+        <p>The method is invalid and could not be processed.</p>
+        <div class="error-actions">
+            <a href="javascript:window.history.back();" class="btn-return-home">
+                <i class="fa-solid fa-arrow-left"></i> Go Back
+            </a>
+        </div>
+    </div>
+</div>
+{{end}}

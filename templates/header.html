@@ -1,0 +1,136 @@
+{{define "header"}}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css"
+        integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/notifications.css">
+    <link rel="stylesheet" href="/static/css/documents.css">
+    <link rel="stylesheet" href="/static/css/toggleable-chat.css">
+    <link rel="stylesheet" href="/static/css/toggleable-jobs.css">
+    <title>{{.Title}}</title>
+</head>
+
+<body>
+    <header class="header-container">
+        <div class="menu">
+            {{if .IsLoggedIn}}
+            <a href="/dashboard">Melconnect</a>
+            {{else}}
+            <a href="/">Melconnect</a>
+            {{end}}
+        </div>
+        <div class="search-bar">
+            <form action="/search" method="GET" id="search-form">
+                <input type="text" name="q" id="search-input" placeholder="Search discussions..." required>
+                <button type="submit" class="search-button">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </form>
+        </div>
+        <div class="mobile-menu-toggle">
+            <i class="fa-solid fa-bars"></i>
+        </div>
+        <div class="authentication">
+            {{if .IsLoggedIn}}
+            <div class="user-info">
+                <!-- <div class="profile-picture">
+                        <i class="fa-regular fa-user"></i>
+                    </div> -->
+                {{if .User.ProfileURL}}
+                <img src="{{.User.ProfileURL}}" alt="Profile Picture" class="profile-picture">
+                {{else}}
+                <i class="fa-regular fa-user profile-placeholder"></i>
+                {{end}}
+                <a href="/view-profile?username={{.Username}}" class="username">{{.Username}}</a>
+                <a href="/logout" class="logout-button">Logout</a>
+            </div>
+            {{else}}
+            <a href="/login">Log in</a>
+            <a href="/signup">Sign up</a>
+            {{end}}
+        </div>
+    </header>
+
+    <div class="mobile-menu">
+        <div class="mobile-menu-header">
+            <i class="fa-solid fa-xmark close-menu"></i>
+        </div>
+        {{if .IsLoggedIn}}
+        <div class="mobile-menu-user">
+            <div class="profile-picture">
+                <i class="fa-regular fa-user"></i>
+            </div>
+            <a href="/view-profile?username={{.Username}}" class="username">{{.Username}}</a>
+        </div>
+        <div class="mobile-menu-items">
+            <div class="menu-item dropdown">
+                <div class="dropdown-header">
+                    <span>Expertise</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="dropdown-content">
+                    {{range $category, $count := .Categories}}
+                    <a href="#" class="category-link" data-category="{{$category}}">
+                        {{$category}} ({{$count}})
+                    </a>
+                    {{end}}
+                </div>
+            </div>
+            <div class="menu-item dropdown">
+                <div class="dropdown-header">
+                    <span>My Activities</span>
+                    <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="dropdown-content">
+                    <a href="/create-post">Create Post</a>
+                    <a href="/create-question">Create Question</a>
+                    <a href="/user-posts">My Posts</a>
+                    <a href="/liked-posts">Liked Posts</a>
+                    <a href="/profile">Manage Profile</a>
+                </div>
+            </div>
+            <a href="/logout" class="menu-item logout">Sign Out</a>
+        </div>
+        {{else}}
+        <div class="mobile-menu-items">
+            <a href="/login" class="menu-item">Log in</a>
+            <a href="/signup" class="menu-item">Sign up</a>
+        </div>
+        {{end}}
+    </div>
+
+    <!-- Hidden user data for JavaScript -->
+    {{if .IsLoggedIn}}
+    <div id="userData" data-user-id="{{.User.ID}}" data-username="{{.Username}}" style="display: none;"></div>
+    {{end}}
+
+    <script src="/static/js/emailValidation.js" defer></script>
+    <script src="/static/js/passwordToggle.js" defer></script>
+    <script src="/static/js/passwordValidation.js" defer></script>
+    <script src="/static/js/errorHandler.js" defer></script>
+    <script src="/static/js/postActions.js" defer></script>
+    <script src="/static/js/dashboard.js" defer></script>
+    <script src="/static/js/comments.js" defer></script>
+    <script src="/static/js/categories.js" defer></script>
+    <script src="/static/js/commentReactions.js" defer></script>
+    <script src="/static/js/mobileMenu.js" defer></script>
+    <script src="/static/js/toggleCategory.js" defer></script>
+    <script src="/static/js/questions.js" defer></script>
+    <script src="/static/js/search.js" defer></script>
+    <script src="/static/js/questionActions.js" defer></script>
+    <script src="/static/js/notifications.js" defer></script>
+    <script src="/static/js/community.js" defer></script>
+    <script src="/static/js/documents.js" defer></script>
+    <script src="/static/js/social-integration.js" defer></script>
+    <script src="/static/js/toggleable-chat.js" defer></script>
+    <script src="/static/js/toggleable-jobs.js" defer></script>
+</body>
+
+</html>
+{{end}}

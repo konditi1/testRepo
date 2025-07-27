@@ -1,0 +1,47 @@
+{{define "create-question"}}
+{{template "header" .}}
+<section class="create-post-container">
+    <div class="posts">
+        <h3>Create a New Question</h3>
+        <form action="/create-question" method="POST" enctype="multipart/form-data" id="create-question-form" class="post-form">
+            <div class="form-group">
+                <label for="title">Question Title</label>
+                <input type="text" id="title" name="title" placeholder="Enter your question title" required>
+            </div>
+            <div class="form-group">
+                <label for="content">Description (Optional)</label>
+                <textarea id="content" name="content" placeholder="Provide more details about your question"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="category">Categories (Select at least one)</label>
+                <div class="category-checkboxes">
+                    {{range .Categories}}
+                    <label>
+                        <input type="checkbox" name="category[]" value="{{.}}"> {{.}}
+                    </label>
+                    {{end}}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="target_group">Target Group</label>
+                <select id="target_group" name="target_group" required>
+                    <option value="All">All Members</option>
+                    <option value="Data Analysis">Data Analysis</option>
+                    <option value="M&E in Science">M&E in Science</option>
+                    <option value="M&E in Health">M&E in Health</option>
+                    <option value="M&E in Education">M&E in Education</option>
+                    <option value="M&E in Social Sciences">M&E in Social Sciences</option>
+                    <option value="M&E in Climate Change">M&E in Climate Change</option>
+                    <option value="M&E in Agriculture">M&E in Agriculture</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="attachment">Attachment (Optional, max 10MB, JPEG/PNG/GIF/SVG/PDF)</label>
+                <input type="file" id="attachment" name="attachment" accept="image/jpeg,image/png,image/gif,image/svg+xml,application/pdf">
+            </div>
+            <button type="submit" class="btn-create">Post Question</button>
+        </form>
+    </div>
+</section>
+<!-- <script src="/static/js/questions.js" defer></script> -->
+{{end}}

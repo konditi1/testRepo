@@ -1,0 +1,39 @@
+{{define "view-profile"}}
+{{template "header" .}}
+<section class="profile-container">
+    <div class="profile-header">
+        <h2>{{.User.FirstName}} {{.User.LastName}}</h2>
+        {{if .User.ProfileURL}}
+        <img src="{{.User.ProfileURL}}" alt="Profile Picture" class="profile-picture">
+        {{else}}
+        <i class="fa-regular fa-user profile-placeholder"></i>
+        {{end}}
+        <p class="username">@{{.User.Username}}</p>
+    </div>
+    <div class="profile-details">
+        <h3>Professional Details</h3>
+        {{if .User.Affiliation}}
+        <p><strong>Affiliation:</strong> {{.User.Affiliation}}</p>
+        {{end}}
+        {{if .User.Bio}}
+        <p><strong>Bio:</strong> {{.User.Bio}}</p>
+        {{end}}
+        {{if .User.YearsExperience}}
+        <p><strong>Years of Experience:</strong> {{.User.YearsExperience}}</p>
+        {{end}}
+        {{if .User.CoreCompetencies}}
+        <p><strong>Core Competencies:</strong> {{.User.CoreCompetencies}}</p>
+        {{end}}
+        {{if .User.CVURL}}
+        <p><strong>CV:</strong> <a href="/download-cv?username={{.User.Username}}" target="_blank">Download CV</a></p>
+        {{end}}
+        <p><strong>Expertise Level:</strong> {{.User.Expertise | title}}</p>
+        <p><strong>Role:</strong> {{.User.Role | title}}</p>
+    </div>
+    <div class="profile-actions">
+        {{if .IsOwnProfile}}
+        <a href="/profile" class="btn-edit-profile">Edit Profile</a>
+        {{end}}
+    </div>
+</section>
+{{end}}

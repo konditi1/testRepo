@@ -1,0 +1,951 @@
+<!-- templates/newsletter.html -->
+{{define "newsletter"}}
+{{template "header" .}}
+<div class="admin-container">
+    <div class="admin-sidebar">
+        <h3><i class="fa-solid fa-cog"></i> Admin Panel</h3>
+        <div class="admin-nav">
+            <a href="/admin/dashboard" class="admin-nav-item">
+                <i class="fa-solid fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="/admin/newsletters" class="admin-nav-item active">
+                <i class="fa-solid fa-envelope"></i> Newsletters
+            </a>
+            <a href="/admin/social-settings" class="admin-nav-item">
+                <i class="fa-solid fa-share-nodes"></i> Social Settings
+            </a>
+        </div>
+    </div>
+    
+    <div class="admin-content">
+        <div class="page-header">
+            <h1><i class="fa-solid fa-envelope"></i> Send Newsletter</h1>
+            <p>Create and send newsletters to all community members</p>
+        </div>
+        
+        <div class="newsletter-form-container">
+            <form action="/admin/send-newsletter" method="POST" class="newsletter-form">
+                <div class="form-group">
+                    <label for="title">Campaign Title*</label>
+                    <input type="text" id="title" name="title" required 
+                           placeholder="Internal name for this campaign">
+                </div>
+                
+                <div class="form-group">
+                    <label for="subject">Email Subject*</label>
+                    <input type="text" id="subject" name="subject" required 
+                           placeholder="Subject line recipients will see">
+                </div>
+                
+                <div class="form-group">
+                    <label for="content">Newsletter Content*</label>
+                    <div class="editor-toolbar">
+                        <button type="button" class="editor-btn" data-command="bold">
+                            <i class="fa-solid fa-bold"></i>
+                        </button>
+                        <button type="button" class="editor-btn" data-command="italic">
+                            <i class="fa-solid fa-italic"></i>
+                        </button>
+                        <button type="button" class="editor-btn" data-command="underline">
+                            <i class="fa-solid fa-underline"></i>
+                        </button>
+                        <div class="editor-divider"></div>
+                        <button type="button" class="editor-btn" data-command="insertUnorderedList">
+                            <i class="fa-solid fa-list-ul"></i>
+                        </button>
+                        <button type="button" class="editor-btn" data-command="insertOrderedList">
+                            <i class="fa-solid fa-list-ol"></i>
+                        </button>
+                        <div class="editor-divider"></div>
+                        <button type="button" class="editor-btn" data-command="createLink">
+                            <i class="fa-solid fa-link"></i>
+                        </button>
+                    </div>
+                    <div id="content" contenteditable="true" class="newsletter-editor" 
+                         placeholder="Write your newsletter content here..."></div>
+                    <input type="hidden" name="content" id="content-hidden">
+                </div>
+                
+                <div class="form-group">
+                    <div class="newsletter-options">
+                        <div class="option-group">
+                            <input type="checkbox" id="send_now" name="send_now" value="true">
+                            <label for="send_now">Send immediately</label>
+                            <small>Uncheck to save as draft</small>
+                        </div>
+                        
+                        <div class="option-group">
+                            <input type="checkbox" id="include_stats" name="include_stats" value="true" checked>
+                            <label for="include_stats">Include community stats</label>
+                            <small>Add community activity summary</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        Send Newsletter
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="saveDraft()">
+                        <i class="fa-solid fa-save"></i>
+                        Save Draft
+                    </button>
+                    <a href="/admin/newsletters" class="btn-cancel">Cancel</a>
+                </div>
+            </form>
+        </div>
+        
+        <div class="newsletter-preview">
+            <h3><i class="fa-solid fa-eye"></i> Preview</h3>
+            <div class="email-preview">
+                <div class="email-header">
+                    <strong>Subject:</strong> <span id="preview-subject">Your newsletter subject</span>
+                </div>
+                <div class="email-body" id="preview-content">
+                    Your newsletter content will appear here...
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initNewsletterEditor();
+    initPreview();
+});
+
+function initNewsletterEditor() {
+    const editor = document.getElementById('content');
+    const hiddenInput = document.getElementById('content-hidden');
+    
+    // Handle editor toolbar
+    document.querySelectorAll('.editor-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const command = this.dataset.command;
+            
+            if (command === 'createLink') {
+                const url = prompt('Enter URL:');
+                if (url) {
+                    document.execCommand(command, false, url);
+                }
+            } else {
+                document.execCommand(command, false, null);
+            }
+            
+            updatePreview();
+        });
+    });
+    
+    // Update hidden input when editor content changes
+    editor.addEventListener('input', function() {
+        hiddenInput.value = this.innerHTML;
+        updatePreview();
+    });
+    
+    // Handle form submission
+    document.querySelector('.newsletter-form').addEventListener('submit', function() {
+        hiddenInput.value = editor.innerHTML;
+    });
+}
+
+function initPreview() {
+    const subjectInput = document.getElementById('subject');
+    const previewSubject = document.getElementById('preview-subject');
+    
+    subjectInput.addEventListener('input', function() {
+        previewSubject.textContent = this.value || 'Your newsletter subject';
+    });
+}
+
+function updatePreview() {
+    const content = document.getElementById('content').innerHTML;
+    const previewContent = document.getElementById('preview-content');
+    previewContent.innerHTML = content || 'Your newsletter content will appear here...';
+}
+
+function saveDraft() {
+    const form = document.querySelector('.newsletter-form');
+    const sendNowCheckbox = document.getElementById('send_now');
+    
+    // Temporarily uncheck send_now to save as draft
+    const originalValue = sendNowCheckbox.checked;
+    sendNowCheckbox.checked = false;
+    
+    // Submit form
+    form.submit();
+}
+</script>
+
+<style>
+.admin-container {
+    display: flex;
+    min-height: calc(100vh - 80px);
+    gap: 20px;
+    padding: 20px;
+}
+
+.admin-sidebar {
+    width: 250px;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    height: fit-content;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.admin-nav {
+    margin-top: 20px;
+}
+
+.admin-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    text-decoration: none;
+    color: #666;
+    border-radius: 6px;
+    margin-bottom: 5px;
+    transition: all 0.2s ease;
+}
+
+.admin-nav-item:hover,
+.admin-nav-item.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.admin-content {
+    flex: 1;
+    background: white;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.page-header {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 20px;
+}
+
+.newsletter-form-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+}
+
+.newsletter-form {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 8px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.editor-toolbar {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+}
+
+.editor-btn {
+    padding: 8px 10px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.editor-btn:hover {
+    background-color: #e9ecef;
+}
+
+.editor-divider {
+    width: 1px;
+    background: #ddd;
+    margin: 0 5px;
+}
+
+.newsletter-editor {
+    min-height: 300px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 0 0 6px 6px;
+    background: white;
+    outline: none;
+}
+
+.newsletter-editor:empty:before {
+    content: attr(placeholder);
+    color: #999;
+}
+
+.newsletter-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.option-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.option-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+}
+
+.option-group label {
+    display: flex;
+    align-items: center;
+    font-weight: normal;
+}
+
+.option-group small {
+    color: #666;
+    margin-left: 28px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-cancel {
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+
+.btn-cancel {
+    background: transparent;
+    color: #666;
+    border: 1px solid #ddd;
+}
+
+.btn-cancel:hover {
+    background: #f8f9fa;
+}
+
+.newsletter-preview {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 8px;
+    height: fit-content;
+}
+
+.email-preview {
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.email-header {
+    padding: 15px;
+    background: #f1f3f4;
+    border-bottom: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.email-body {
+    padding: 20px;
+    min-height: 200px;
+    line-height: 1.6;
+}
+</style>
+{{end}}
+
+<!-- templates/social-settings.html -->
+{{define "social-settings"}}
+{{template "header" .}}
+<div class="admin-container">
+    <div class="admin-sidebar">
+        <h3><i class="fa-solid fa-cog"></i> Admin Panel</h3>
+        <div class="admin-nav">
+            <a href="/admin/dashboard" class="admin-nav-item">
+                <i class="fa-solid fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a href="/admin/newsletters" class="admin-nav-item">
+                <i class="fa-solid fa-envelope"></i> Newsletters
+            </a>
+            <a href="/admin/social-settings" class="admin-nav-item active">
+                <i class="fa-solid fa-share-nodes"></i> Social Settings
+            </a>
+        </div>
+    </div>
+    
+    <div class="admin-content">
+        <div class="page-header">
+            <h1><i class="fa-solid fa-share-nodes"></i> Social Integration Settings</h1>
+            <p>Manage social media sharing, email newsletters, and external integrations</p>
+        </div>
+        
+        <div class="settings-grid">
+            {{range .Settings}}
+            <div class="setting-card">
+                <div class="setting-header">
+                    <div class="setting-info">
+                        <h3>{{.FeatureName | title | replace "_" " "}}</h3>
+                        <p class="setting-description">
+                            {{if eq .FeatureName "social_media_sharing"}}
+                                Allow users to share posts, questions, and documents to social media platforms
+                            {{else if eq .FeatureName "email_newsletters"}}
+                                Enable sending newsletters and announcements to all community members
+                            {{else if eq .FeatureName "whatsapp_integration"}}
+                                Send digests and announcements to WhatsApp groups (requires API setup)
+                            {{else}}
+                                Manage {{.FeatureName | replace "_" " "}} functionality
+                            {{end}}
+                        </p>
+                    </div>
+                    <div class="setting-toggle">
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="setting-checkbox" 
+                                   data-feature="{{.FeatureName}}" 
+                                   {{if .IsEnabled}}checked{{end}}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-details {{if not .IsEnabled}}disabled{{end}}">
+                    {{if eq .FeatureName "social_media_sharing"}}
+                        <div class="platform-list">
+                            <div class="platform-item">
+                                <i class="fa-brands fa-twitter"></i> Twitter
+                                <span class="platform-status active">Active</span>
+                            </div>
+                            <div class="platform-item">
+                                <i class="fa-brands fa-linkedin"></i> LinkedIn
+                                <span class="platform-status active">Active</span>
+                            </div>
+                            <div class="platform-item">
+                                <i class="fa-brands fa-facebook"></i> Facebook
+                                <span class="platform-status active">Active</span>
+                            </div>
+                            <div class="platform-item">
+                                <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                                <span class="platform-status active">Active</span>
+                            </div>
+                        </div>
+                    {{else if eq .FeatureName "email_newsletters"}}
+                        <div class="feature-stats">
+                            <div class="stat">
+                                <span class="stat-label">Max Recipients</span>
+                                <span class="stat-value">1,000</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Daily Limit</span>
+                                <span class="stat-value">5 campaigns</span>
+                            </div>
+                        </div>
+                        <a href="/admin/newsletters" class="btn-manage">
+                            <i class="fa-solid fa-envelope"></i> Manage Newsletters
+                        </a>
+                    {{else if eq .FeatureName "whatsapp_integration"}}
+                        <div class="whatsapp-config">
+                            <div class="config-item">
+                                <label>Webhook URL</label>
+                                <input type="text" class="config-input" placeholder="https://api.whatsapp.com/webhook" disabled>
+                            </div>
+                            <div class="config-item">
+                                <label>Group ID</label>
+                                <input type="text" class="config-input" placeholder="Group ID here" disabled>
+                            </div>
+                            <p class="config-note">
+                                <i class="fa-solid fa-info-circle"></i>
+                                WhatsApp Business API integration required. Contact support for setup.
+                            </p>
+                        </div>
+                    {{end}}
+                </div>
+                
+                <div class="setting-stats">
+                    <div class="stat-row">
+                        <span>Last Updated:</span>
+                        <span>{{.UpdatedAt.Format "Jan 2, 2006 15:04"}}</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Status:</span>
+                        <span class="status {{if .IsEnabled}}enabled{{else}}disabled{{end}}">
+                            {{if .IsEnabled}}Enabled{{else}}Disabled{{end}}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {{end}}
+        </div>
+        
+        <div class="usage-analytics">
+            <h2><i class="fa-solid fa-chart-bar"></i> Usage Analytics</h2>
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <div class="analytics-icon">
+                        <i class="fa-solid fa-share-nodes"></i>
+                    </div>
+                    <div class="analytics-content">
+                        <h3>Total Shares</h3>
+                        <p class="analytics-number">1,247</p>
+                        <span class="analytics-change positive">+12% this week</span>
+                    </div>
+                </div>
+                
+                <div class="analytics-card">
+                    <div class="analytics-icon">
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
+                    <div class="analytics-content">
+                        <h3>Newsletters Sent</h3>
+                        <p class="analytics-number">23</p>
+                        <span class="analytics-change neutral">4 this month</span>
+                    </div>
+                </div>
+                
+                <div class="analytics-card">
+                    <div class="analytics-icon">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </div>
+                    <div class="analytics-content">
+                        <h3>WhatsApp Messages</h3>
+                        <p class="analytics-number">0</p>
+                        <span class="analytics-change neutral">Feature disabled</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initSettingsToggle();
+});
+
+function initSettingsToggle() {
+    document.querySelectorAll('.setting-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const featureName = this.dataset.feature;
+            const isEnabled = this.checked;
+            
+            updateSocialSetting(featureName, isEnabled, this);
+        });
+    });
+}
+
+function updateSocialSetting(featureName, isEnabled, checkbox) {
+    // Show loading state
+    checkbox.disabled = true;
+    const card = checkbox.closest('.setting-card');
+    const details = card.querySelector('.setting-details');
+    
+    fetch('/admin/social-settings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `feature_name=${featureName}&is_enabled=${isEnabled}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update UI
+            details.classList.toggle('disabled', !isEnabled);
+            
+            // Update status
+            const statusSpan = card.querySelector('.status');
+            statusSpan.textContent = isEnabled ? 'Enabled' : 'Disabled';
+            statusSpan.className = `status ${isEnabled ? 'enabled' : 'disabled'}`;
+            
+            // Show success message
+            showNotification(`${featureName.replace('_', ' ')} ${isEnabled ? 'enabled' : 'disabled'} successfully`, 'success');
+        } else {
+            // Revert checkbox on error
+            checkbox.checked = !isEnabled;
+            showNotification(data.error || 'Failed to update setting', 'error');
+        }
+    })
+    .catch(error => {
+        // Revert checkbox on error
+        checkbox.checked = !isEnabled;
+        showNotification('Network error occurred', 'error');
+    })
+    .finally(() => {
+        checkbox.disabled = false;
+    });
+}
+
+function showNotification(message, type) {
+    // Same notification function as in social-integration.js
+    const notification = document.createElement('div');
+    notification.className = `share-notification ${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fa-solid ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    setTimeout(() => notification.classList.add('show'), 100);
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => document.body.removeChild(notification), 300);
+    }, 3000);
+}
+</script>
+
+<style>
+.settings-grid {
+    display: grid;
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.setting-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.setting-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.setting-info h3 {
+    margin: 0 0 8px 0;
+    color: #333;
+    text-transform: capitalize;
+}
+
+.setting-description {
+    color: #666;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 30px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.3s;
+    border-radius: 30px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: #007bff;
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(30px);
+}
+
+.setting-details {
+    margin-bottom: 20px;
+    transition: opacity 0.3s ease;
+}
+
+.setting-details.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.platform-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.platform-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.platform-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.platform-status.active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.feature-stats {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 15px;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.btn-manage {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.btn-manage:hover {
+    background: #0056b3;
+}
+
+.whatsapp-config {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.config-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.config-item label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.config-input {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.config-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    color: #856404;
+    font-size: 14px;
+    margin: 0;
+}
+
+.setting-stats {
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+}
+
+.stat-row:first-child {
+    color: #666;
+}
+
+.status {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status.enabled {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status.disabled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.usage-analytics {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 8px;
+}
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.analytics-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.analytics-icon {
+    width: 50px;
+    height: 50px;
+    background: #007bff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+}
+
+.analytics-content h3 {
+    margin: 0 0 5px 0;
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+.analytics-number {
+    margin: 0 0 5px 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+}
+
+.analytics-change {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.analytics-change.positive {
+    color: #28a745;
+}
+
+.analytics-change.neutral {
+    color: #666;
+}
+</style>
+{{end}}

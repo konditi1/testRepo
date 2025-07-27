@@ -1,0 +1,456 @@
+{{define "chat"}}
+{{template "header" .}}
+<link rel="stylesheet" href="/static/css/chat.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<section class="chat-container">
+    <div class="chat-header">
+        <div class="header-left">
+            <div class="recipient-avatar-container">
+                {{if .RecipientProfile}}
+                    <img src="{{.RecipientProfile}}" alt="{{.RecipientUsername}}" class="recipient-avatar">
+                {{else}}
+                    <div class="initials-avatar" id="initials-avatar"></div>
+                {{end}}
+                <div class="online-status {{if .RecipientOnline}}online{{end}}" id="online-status"></div>
+            </div>
+            <div class="header-info">
+                <h3 id="recipient-name">{{.RecipientUsername}}</h3>
+                <p class="user-status" id="user-status">
+                    <span id="online-text">{{if .RecipientOnline}}online{{else}}{{.RecipientLastSeen}}{{end}}</span>
+                </p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="header-btn" id="video-call-btn" title="Video call">
+                <i class="fas fa-video"></i>
+            </button>
+            <button class="header-btn" id="voice-call-btn" title="Voice call">
+                <i class="fas fa-phone"></i>
+            </button>
+            <button class="header-btn" id="menu-btn" title="Menu">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="chat-status" id="chat-status">
+        <i class="fas fa-circle-notch fa-spin status-icon" id="status-icon"></i>
+        <span id="connection-status">Connecting...</span>
+    </div>
+    
+    <div class="chat-messages" id="chat-messages">
+        {{range .MessagesByDate}}
+            <div class="date-header">{{.Date}}</div>
+            <div class="message-group">
+                {{range .Messages}}
+                <div class="message {{if eq .SenderID $.UserID}}sent{{else}}received{{end}}" 
+                     data-message-id="{{.ID}}" 
+                     data-timestamp="{{.CreatedAt.Format "2006-01-02T15:04:05Z07:00"}}">
+                    <div class="message-content">
+                        <p>{{.Content}}</p>
+                        <div class="message-footer">
+                            <span class="timestamp" data-utc-time="{{.CreatedAt.Unix}}">{{.CreatedAt.Format "15:04"}}</span>
+                            {{if eq .SenderID $.UserID}}
+                            <span class="message-status">
+                                <i class="fas fa-check-double"></i>
+                            </span>
+                            {{end}}
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+        {{end}}
+        
+        <div class="typing-indicator" id="typing-indicator">
+            <div class="typing-dots">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="chat-input">
+        <div class="input-wrapper">
+            <button class="attachment-btn" id="attachment-btn" title="Attach file">
+                <i class="fas fa-paperclip"></i>
+            </button>
+            <input type="text" id="message-input" placeholder="Type a message">
+            <button class="emoji-btn" id="emoji-btn" title="Emoji">
+                <i class="far fa-smile"></i>
+            </button>
+        </div>
+        <button class="send-btn" id="send-btn" title="Send message" onclick="sendMessage()">
+            <i class="fas fa-paper-plane" id="send-icon"></i>
+        </button>
+    </div>
+</section>
+<script>
+let ws;
+const userID = {{.UserID}};
+const recipientID = {{.RecipientID}};
+const username = '{{.Username}}';
+const recipientUsername = '{{.RecipientUsername}}';
+let isTyping = false;
+let typingTimeout;
+
+function initializeWebSocket() {
+    try {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        ws = new WebSocket(protocol + '//' + window.location.host + '/ws');
+        
+        const statusElement = document.getElementById('connection-status');
+        const chatStatus = document.getElementById('chat-status');
+        const statusIcon = document.getElementById('status-icon');
+        const onlineStatus = document.getElementById('online-status');
+        const onlineText = document.getElementById('online-text');
+        
+        ws.onopen = function() {
+            console.log('WebSocket connection established');
+            statusElement.textContent = 'Connected';
+            chatStatus.className = 'chat-status connected';
+            statusIcon.className = 'fas fa-check-circle status-icon';
+            
+            // Don't update recipient status here - server will send status updates
+            
+            // Hide status after 3 seconds
+            setTimeout(() => {
+                chatStatus.style.display = 'none';
+            }, 3000);
+        };
+        
+        ws.onmessage = function(event) {
+            try {
+                const message = JSON.parse(event.data);
+                if (message.type === 'typing') {
+                    handleTypingIndicator(message);
+                } else if (message.type === 'status_update' && message.user_id === recipientID) {
+                    // Handle status updates
+                    updateUserStatus(message.is_online, new Date(message.last_seen));
+                } else if (message.sender_id && message.recipient_id && message.content) {
+                    appendMessage(message);
+                }
+            } catch (e) {
+                console.error('Error parsing message:', e);
+            }
+        };
+        
+        ws.onclose = function() {
+            console.log('WebSocket connection closed');
+            statusElement.textContent = 'Disconnected. Reconnecting...';
+            chatStatus.className = 'chat-status disconnected';
+            chatStatus.style.display = 'flex';
+            statusIcon.className = 'fas fa-circle-notch fa-spin status-icon';
+            
+            // Don't update recipient status here - we don't know their actual status
+            
+            setTimeout(initializeWebSocket, 3000);
+        };
+        
+        ws.onerror = function(error) {
+            console.error('WebSocket error:', error);
+            statusElement.textContent = 'Connection error';
+            chatStatus.className = 'chat-status disconnected';
+            chatStatus.style.display = 'flex';
+            statusIcon.className = 'fas fa-exclamation-triangle status-icon';
+        };
+    } catch (e) {
+        console.error('Error initializing WebSocket:', e);
+    }
+}
+
+// Function to update user status UI
+function updateUserStatus(isOnline, lastSeen) {
+    const onlineStatus = document.getElementById('online-status');
+    const onlineText = document.getElementById('online-text');
+    
+    if (isOnline) {
+        onlineStatus.classList.add('online');
+        onlineText.textContent = 'online';
+    } else {
+        onlineStatus.classList.remove('online');
+        onlineText.textContent = formatLastSeen(lastSeen);
+    }
+}
+
+// Format last seen timestamp like WhatsApp
+function formatLastSeen(timestamp) {
+    const now = new Date();
+    
+    // Format time as HH:MM (24-hour)
+    const hours = timestamp.getHours().toString().padStart(2, '0');
+    const minutes = timestamp.getMinutes().toString().padStart(2, '0');
+    const timeStr = `${hours}:${minutes}`;
+    
+    // Check if it's today
+    if (now.toDateString() === timestamp.toDateString()) {
+        return `last seen today at ${timeStr}`;
+    }
+    
+    // Check if it's yesterday
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    if (yesterday.toDateString() === timestamp.toDateString()) {
+        return `last seen yesterday at ${timeStr}`;
+    }
+    
+    // If it's within the last 7 days, show the day name
+    const dayDiff = Math.floor((now - timestamp) / (1000 * 60 * 60 * 24));
+    if (dayDiff < 7) {
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        return `last seen ${days[timestamp.getDay()]} at ${timeStr}`;
+    }
+    
+    // For older dates
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    return `last seen ${months[timestamp.getMonth()]} ${timestamp.getDate()}, ${timestamp.getFullYear()}`;
+}
+
+function sendMessage() {
+    const input = document.getElementById('message-input');
+    const content = input.value.trim();
+    if (content === '' || !ws || ws.readyState !== WebSocket.OPEN) return;
+    const sendBtn = document.getElementById('send-btn');
+    const sendIcon = document.getElementById('send-icon');
+    
+    // Show sending state
+    sendBtn.classList.add('sending');
+    sendIcon.className = 'fas fa-circle-notch fa-spin';
+    const msg = {
+        sender_id: userID,
+        recipient_id: recipientID,
+        content: content,
+        created_at: new Date().toISOString(),
+        sender_username: username,
+        recipient_username: recipientUsername
+    };
+    try {
+        ws.send(JSON.stringify(msg));
+        input.value = '';
+        
+        // Reset send button after a delay
+        setTimeout(() => {
+            sendBtn.classList.remove('sending');
+            sendIcon.className = 'fas fa-paper-plane';
+        }, 500);
+        
+        console.log('Message sent:', msg);
+    } catch (e) {
+        console.error('Error sending message:', e);
+        sendBtn.classList.remove('sending');
+        sendIcon.className = 'fas fa-paper-plane';
+    }
+}
+
+function handleTypingIndicator(message) {
+    const typingIndicator = document.getElementById('typing-indicator');
+    const chatMessages = document.getElementById('chat-messages');
+    
+    if (message.sender_id === recipientID) {
+        if (message.is_typing) {
+            typingIndicator.classList.add('show');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        } else {
+            typingIndicator.classList.remove('show');
+        }
+    }
+}
+
+function sendTypingIndicator(isTyping) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+            type: 'typing',
+            sender_id: userID,
+            recipient_id: recipientID,
+            is_typing: isTyping
+        }));
+    }
+}
+
+function appendMessage(message) {
+    const messagesDiv = document.getElementById('chat-messages');
+    const existingMessage = document.querySelector(`[data-message-id="${message.id}"]`);
+    if (existingMessage) return;
+    const today = new Date();
+    const messageDate = new Date(message.created_at);
+    
+    const dateStr = messageDate.toDateString() === today.toDateString() ? 'Today' :
+                    messageDate.toDateString() === new Date(today.setDate(today.getDate() - 1)).toDateString() ? 'Yesterday' :
+                    messageDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    let dateHeader = Array.from(messagesDiv.querySelectorAll('.date-header')).find(header => header.textContent === dateStr);
+    let messageGroup;
+    
+    if (dateHeader) {
+        messageGroup = dateHeader.nextElementSibling;
+        if (!messageGroup || !messageGroup.classList.contains('message-group')) {
+            messageGroup = document.createElement('div');
+            messageGroup.className = 'message-group';
+            dateHeader.insertAdjacentElement('afterend', messageGroup);
+        }
+    } else {
+        dateHeader = document.createElement('div');
+        dateHeader.className = 'date-header';
+        dateHeader.textContent = dateStr;
+        messageGroup = document.createElement('div');
+        messageGroup.className = 'message-group';
+        messagesDiv.appendChild(dateHeader);
+        messagesDiv.appendChild(messageGroup);
+    }
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${message.sender_id === userID ? 'sent' : 'received'}`;
+    messageDiv.setAttribute('data-message-id', message.id);
+    messageDiv.setAttribute('data-timestamp', message.created_at);
+    const formattedTime = messageDate.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+    const statusIcon = message.sender_id === userID ? 
+        '<span class="message-status"><i class="fas fa-check"></i></span>' : '';
+    messageDiv.innerHTML = `
+        <div class="message-content">
+            <p>${message.content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+            <div class="message-footer">
+                <span class="timestamp">${formattedTime}</span>
+                ${statusIcon}
+            </div>
+        </div>
+    `;
+    // Hide typing indicator if it's from the recipient
+    if (message.sender_id === recipientID) {
+        document.getElementById('typing-indicator').classList.remove('show');
+    }
+    // Insert message in chronological order
+    const messages = messageGroup.querySelectorAll('.message');
+    let inserted = false;
+    for (let i = 0; i < messages.length; i++) {
+        const existingTimestamp = new Date(messages[i].getAttribute('data-timestamp'));
+        if (new Date(message.created_at) < existingTimestamp) {
+            messageGroup.insertBefore(messageDiv, messages[i]);
+            inserted = true;
+            break;
+        }
+    }
+    if (!inserted) {
+        messageGroup.appendChild(messageDiv);
+    }
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    // Simulate message status updates for sent messages
+    if (message.sender_id === userID) {
+        setTimeout(() => {
+            const statusSpan = messageDiv.querySelector('.message-status i');
+            if (statusSpan) {
+                statusSpan.className = 'fas fa-check-double';
+            }
+        }, 1000);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize initials avatar if profile picture is not available
+    const initialsAvatar = document.getElementById('initials-avatar');
+    if (initialsAvatar) {
+        const username = recipientUsername;
+        
+        // Get initials
+        let initials = '';
+        const parts = username.split(' ');
+        
+        if (parts.length >= 2) {
+            // First letter of first and last name
+            initials = parts[0].charAt(0) + parts[parts.length - 1].charAt(0);
+        } else if (username.length > 0) {
+            // First letter or first two letters of single name
+            initials = username.length >= 2 ? username.substring(0, 2) : username;
+        } else {
+            initials = '?';
+        }
+        
+        // Generate a color based on username (hash-based)
+        let hash = 0;
+        for (let i = 0; i < username.length; i++) {
+            hash = username.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        
+        // Convert hash to a color
+        const hue = Math.abs(hash % 360);
+        const color = `hsl(${hue}, 70%, 60%)`;
+        
+        // Set the avatar
+        initialsAvatar.style.backgroundColor = color;
+        initialsAvatar.textContent = initials.toUpperCase();
+    }
+    
+    initializeWebSocket();
+    
+    // Format all existing timestamps
+    document.querySelectorAll('.timestamp[data-utc-time]').forEach(timestamp => {
+        const utcSeconds = parseInt(timestamp.getAttribute('data-utc-time'));
+        if (!isNaN(utcSeconds)) {
+            const date = new Date(utcSeconds * 1000);
+            timestamp.textContent = date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+        }
+    });
+    
+    const input = document.getElementById('message-input');
+    
+    // Handle Enter key
+    input.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+    
+    // Handle typing indicators
+    input.addEventListener('input', function() {
+        if (!isTyping) {
+            isTyping = true;
+            sendTypingIndicator(true);
+        }
+        
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+            isTyping = false;
+            sendTypingIndicator(false);
+        }, 1000);
+    });
+    
+    input.addEventListener('blur', function() {
+        if (isTyping) {
+            isTyping = false;
+            sendTypingIndicator(false);
+        }
+    });
+    
+    // Header button interactions
+    document.getElementById('video-call-btn').addEventListener('click', () => {
+        alert('Starting video call...');
+    });
+    
+    document.getElementById('voice-call-btn').addEventListener('click', () => {
+        alert('Starting voice call...');
+    });
+    
+    document.getElementById('menu-btn').addEventListener('click', () => {
+        alert('Chat menu would open here');
+    });
+    
+    document.getElementById('attachment-btn').addEventListener('click', () => {
+        alert('File attachment menu would open here');
+    });
+    
+    document.getElementById('emoji-btn').addEventListener('click', () => {
+        alert('Emoji picker would open here');
+    });
+    
+    // Auto-scroll to bottom
+    const chatMessages = document.getElementById('chat-messages');
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+</script>
+{{end}}

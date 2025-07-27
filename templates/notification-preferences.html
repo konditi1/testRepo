@@ -1,0 +1,177 @@
+{{define "notification-preferences"}}
+{{template "header" .}}
+<link rel="stylesheet" href="/static/css/notifications.css">
+
+<section class="preferences-container">
+    <div class="preferences-header">
+        <h2><i class="fa-solid fa-gear"></i> Notification Preferences</h2>
+        <p>Choose what notifications you'd like to receive</p>
+    </div>
+
+    {{if .Request.URL.Query.Get "success"}}
+    <div class="success-message">
+        <i class="fa-solid fa-check-circle"></i>
+        Preferences updated successfully!
+    </div>
+    {{end}}
+
+    <form action="/notification-preferences" method="POST" class="preferences-form">
+        <div class="preference-section">
+            <h3><i class="fa-solid fa-file-lines"></i> Content Notifications</h3>
+            <div class="preference-items">
+                <div class="preference-item">
+                    <label class="switch">
+                        <input type="checkbox" name="new_posts" {{if .Preferences.NewPosts}}checked{{end}}>
+                        <span class="slider"></span>
+                    </label>
+                    <div class="preference-details">
+                        <h4>New Posts</h4>
+                        <p>Get notified when new posts are published</p>
+                    </div>
+                </div>
+
+                <div class="preference-item">
+                    <label class="switch">
+                        <input type="checkbox" name="new_questions" {{if .Preferences.NewQuestions}}checked{{end}}>
+                        <span class="slider"></span>
+                    </label>
+                    <div class="preference-details">
+                        <h4>New Questions</h4>
+                        <p>Get notified when new questions are asked</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preference-section">
+            <h3><i class="fa-solid fa-comment"></i> Engagement Notifications</h3>
+            <div class="preference-items">
+                <div class="preference-item">
+                    <label class="switch">
+                        <input type="checkbox" name="comments_on_my_posts" {{if .Preferences.CommentsOnMyPosts}}checked{{end}}>
+                        <span class="slider"></span>
+                    </label>
+                    <div class="preference-details">
+                        <h4>Comments on My Posts</h4>
+                        <p>Get notified when someone comments on your posts</p>
+                    </div>
+                </div>
+
+                <div class="preference-item">
+                    <label class="switch">
+                        <input type="checkbox" name="comments_on_my_questions" {{if .Preferences.CommentsOnMyQuestions}}checked{{end}}>
+                        <span class="slider"></span>
+                    </label>
+                    <div class="preference-details">
+                        <h4>Comments on My Questions</h4>
+                        <p>Get notified when someone answers your questions</p>
+                    </div>
+                </div>
+
+                <div class="preference-item">
+                    <label class="switch">
+                        <input type="checkbox" name="likes_on_my_content" {{if .Preferences.LikesOnMyContent}}checked{{end}}>
+                        <span class="slider"></span>
+                    </label>
+                    <div class="preference-details">
+                        <h4>Likes on My Content</h4>
+                        <p>Get notified when someone likes your posts, questions, or comments</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preference-section">
+            <h3><i class="fa-solid fa-briefcase"></i> Job Notifications</h3>
+            <div class="preference-items">
+                <div class="preference-item">
+                    <label class="switch">
+                        <input type="checkbox" name="job_postings" {{if .Preferences.JobPostings}}checked{{end}}>
+                        <span class="slider"></span>
+                    </label>
+                    <div class="preference-details">
+                        <h4>New Job Postings</h4>
+                        <p>Get notified when new jobs are posted</p>
+                    </div>
+                </div>
+
+                <div class="preference-item">
+                    <label class="switch">
+                        <input type="checkbox" name="job_applications" {{if .Preferences.JobApplications}}checked{{end}}>
+                        <span class="slider"></span>
+                    </label>
+                    <div class="preference-details">
+                        <h4>Job Applications</h4>
+                        <p>Get notified when someone applies to your job postings</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preference-section">
+            <h3><i class="fa-solid fa-envelope"></i> Communication</h3>
+            <div class="preference-items">
+                <div class="preference-item">
+                    <label class="switch">
+                        <input type="checkbox" name="chat_messages" {{if .Preferences.ChatMessages}}checked{{end}}>
+                        <span class="slider"></span>
+                    </label>
+                    <div class="preference-details">
+                        <h4>Chat Messages</h4>
+                        <p>Get notified when you receive new messages</p>
+                    </div>
+                </div>
+
+                <div class="preference-item">
+                    <label class="switch">
+                        <input type="checkbox" name="announcements" {{if .Preferences.Announcements}}checked{{end}}>
+                        <span class="slider"></span>
+                    </label>
+                    <div class="preference-details">
+                        <h4>Platform Announcements</h4>
+                        <p>Get notified about important platform updates and news</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preference-section">
+            <h3><i class="fa-solid fa-cog"></i> Delivery Options</h3>
+            <div class="preference-items">
+                <div class="preference-item">
+                    <label class="switch">
+                        <input type="checkbox" name="push_notifications" {{if .Preferences.PushNotifications}}checked{{end}}>
+                        <span class="slider"></span>
+                    </label>
+                    <div class="preference-details">
+                        <h4>Push Notifications</h4>
+                        <p>Receive notifications in your browser</p>
+                    </div>
+                </div>
+
+                <div class="preference-item">
+                    <label class="switch">
+                        <input type="checkbox" name="email_notifications" {{if .Preferences.EmailNotifications}}checked{{end}}>
+                        <span class="slider"></span>
+                    </label>
+                    <div class="preference-details">
+                        <h4>Email Notifications</h4>
+                        <p>Receive notifications via email (coming soon)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preferences-actions">
+            <button type="submit" class="btn-save">
+                <i class="fa-solid fa-save"></i> Save Preferences
+            </button>
+            <a href="/dashboard" class="btn-cancel">
+                <i class="fa-solid fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</section>
+
+{{template "footer" .}}
+{{end}}

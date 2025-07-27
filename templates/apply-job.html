@@ -1,0 +1,88 @@
+{{define "apply-job"}}
+{{template "header" .}}
+<section class="create-post-container">
+    <div class="posts">
+        <h3><i class="fa-solid fa-paper-plane"></i> Apply for {{.Job.Title}}</h3>
+        
+        <div class="job-card" style="margin-bottom: 30px;">
+            <div class="job-header">
+                <div>
+                    <h4 style="color: #E0E0E0; margin: 0;">{{.Job.Title}}</h4>
+                    <div class="job-company">
+                        {{if .Job.EmployerCompany}}{{.Job.EmployerCompany}}{{else}}{{.Job.EmployerUsername}}{{end}}
+                        • {{.Job.Location}}
+                    </div>
+                </div>
+            </div>
+            <div class="job-meta" style="margin-top: 15px;">
+                <div class="job-meta-item">
+                    <i class="fa-solid fa-clock"></i>
+                    <span>{{.Job.EmploymentType}}</span>
+                </div>
+                {{if .Job.SalaryRange}}
+                <div class="job-meta-item">
+                    <i class="fa-solid fa-dollar-sign"></i>
+                    <span>{{.Job.SalaryRange}}</span>
+                </div>
+                {{end}}
+                <div class="job-meta-item">
+                    <i class="fa-solid fa-hourglass-end"></i>
+                    <span>Apply by {{.Job.DeadlineHuman}}</span>
+                </div>
+            </div>
+        </div>
+        
+        {{if .Error}}
+        <div class="error-alert">
+            <i class="fa-solid fa-exclamation-triangle"></i>
+            {{.Error}}
+        </div>
+        {{end}}
+        
+        <form class="job-form" action="/apply-job?id={{.Job.ID}}" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="cover_letter">Cover Letter *</label>
+                <textarea id="cover_letter" name="cover_letter" required 
+                          placeholder="Write a compelling cover letter explaining why you're the perfect fit for this role..."
+                          style="min-height: 200px;"></textarea>
+                <small style="color: var(--secondary-color);">
+                    Explain your relevant experience, skills, and motivation for applying.
+                </small>
+            </div>
+            
+            <div class="form-group">
+                <label for="application_letter">Additional Application Document (Optional)</label>
+                <input type="file" id="application_letter" name="application_letter" 
+                       accept=".pdf,.doc,.docx">
+                <small style="color: var(--secondary-color);">
+                    Upload additional documents like portfolio, certifications, etc. (PDF, DOC, DOCX - Max 10MB)
+                </small>
+            </div>
+            
+            <div style="background: rgba(0, 191, 255, 0.1); padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid rgba(0, 191, 255, 0.3);">
+                <h4 style="color: var(--header-background); margin: 0 0 10px 0;">
+                    <i class="fa-solid fa-info-circle"></i> Your Profile Information
+                </h4>
+                <p style="color: #B0B0B0; margin: 0;">
+                    Your CV and profile details will be automatically included with this application.
+                    {{if not .User.CVURL}}
+                        <strong style="color: #FF6B47;">
+                            Note: You haven't uploaded a CV yet. 
+                            <a href="/profile" style="color: var(--header-background);">Update your profile</a> 
+                            to include one.
+                        </strong>
+                    {{end}}
+                </p>
+            </div>
+            
+            <div style="display: flex; gap: 15px; justify-content: flex-end;">
+                <a href="/view-job?id={{.Job.ID}}" class="btn-view">Cancel</a>
+                <button type="submit" class="btn-submit-job">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    Submit Application
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+{{end}}

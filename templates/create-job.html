@@ -1,0 +1,88 @@
+{{define "create-job"}}
+{{template "header" .}}
+<section class="create-post-container">
+    <div class="posts">
+        <h3><i class="fa-solid fa-briefcase"></i> Post a Job Opportunity</h3>
+        
+        {{if .Error}}
+        <div class="error-alert">
+            <i class="fa-solid fa-exclamation-triangle"></i>
+            {{.Error}}
+        </div>
+        {{end}}
+        
+        {{if .Success}}
+        <div class="success-alert">
+            <i class="fa-solid fa-check-circle"></i>
+            {{.Success}}
+        </div>
+        {{end}}
+        
+        <form class="job-form" action="/create-job" method="POST">
+            <div class="form-group">
+                <label for="title">Job Title *</label>
+                <input type="text" id="title" name="title" required
+                       value="{{if .FormData}}{{.FormData.title}}{{end}}"
+                       placeholder="e.g., Senior M&E Officer">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="location">Location *</label>
+                    <input type="text" id="location" name="location" required
+                           value="{{if .FormData}}{{.FormData.location}}{{end}}"
+                           placeholder="e.g., Nairobi, Kenya">
+                </div>
+                <div class="form-group">
+                    <label for="employment_type">Employment Type *</label>
+                    <select id="employment_type" name="employment_type" required>
+                        <option value="">Select Type</option>
+                        <option value="full_time" {{if .FormData}}{{if eq .FormData.employment_type "full_time"}}selected{{end}}{{end}}>Full Time</option>
+                        <option value="part_time" {{if .FormData}}{{if eq .FormData.employment_type "part_time"}}selected{{end}}{{end}}>Part Time</option>
+                        <option value="contract" {{if .FormData}}{{if eq .FormData.employment_type "contract"}}selected{{end}}{{end}}>Contract</option>
+                        <option value="internship" {{if .FormData}}{{if eq .FormData.employment_type "internship"}}selected{{end}}{{end}}>Internship</option>
+                        <option value="volunteer" {{if .FormData}}{{if eq .FormData.employment_type "volunteer"}}selected{{end}}{{end}}>Volunteer</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="salary_range">Salary Range</label>
+                    <input type="text" id="salary_range" name="salary_range"
+                           value="{{if .FormData}}{{.FormData.salary_range}}{{end}}"
+                           placeholder="e.g., $50,000 - $70,000">
+                </div>
+                <div class="form-group">
+                    <label for="application_deadline">Application Deadline *</label>
+                    <input type="date" id="application_deadline" name="application_deadline" required
+                           value="{{if .FormData}}{{.FormData.application_deadline}}{{end}}">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="description">Job Description *</label>
+                <textarea id="description" name="description" required 
+                          placeholder="Describe the role, organization background, and key objectives...">{{if .FormData}}{{.FormData.description}}{{end}}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="responsibilities">Key Responsibilities</label>
+                <textarea id="responsibilities" name="responsibilities"
+                          placeholder="List the main duties and responsibilities...">{{if .FormData}}{{.FormData.responsibilities}}{{end}}</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="requirements">Requirements & Qualifications</label>
+                <textarea id="requirements" name="requirements"
+                          placeholder="Education, experience, skills, and other requirements...">{{if .FormData}}{{.FormData.requirements}}{{end}}</textarea>
+            </div>
+            
+            <button type="submit" class="btn-submit-job">
+                <i class="fa-solid fa-upload"></i>
+                Post Job
+            </button>
+        </form>
+    </div>
+</section>
+{{end}}

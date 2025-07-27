@@ -1,0 +1,126 @@
+{{define "jobs"}}
+{{template "header" .}}
+<section class="dash-container">
+    <div class="posts">
+        {{if .FlashMessage}}
+        <div class="success-alert">
+            <i class="fa-solid fa-check-circle"></i>
+            {{.FlashMessage}}
+        </div>
+        {{end}}
+        
+        <div class="section-header">
+            <div class="section-icon">
+                <i class="fa-solid fa-briefcase"></i>
+            </div>
+            <div class="section-content">
+                <h3 class="section-title">M&E Job Opportunities</h3>
+                <p class="section-subtitle">Find your next role in monitoring & evaluation</p>
+            </div>
+        </div>
+
+        <div class="create-actions">
+            <div class="create-buttons-container">
+                <a href="/create-job" class="btn-create-modern btn-create-job-modern">
+                    <div class="btn-icon">
+                        <i class="fa-solid fa-plus"></i>
+                    </div>
+                    <span class="btn-text">Post Job</span>
+                    <div class="btn-description">Hire M&E professionals</div>
+                </a>
+                <a href="/my-jobs" class="btn-create-modern btn-my-jobs-modern">
+                    <div class="btn-icon">
+                        <i class="fa-solid fa-list"></i>
+                    </div>
+                    <span class="btn-text">My Jobs</span>
+                    <div class="btn-description">Manage posted jobs</div>
+                </a>
+                <a href="/my-applications" class="btn-create-modern btn-my-apps-modern">
+                    <div class="btn-icon">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </div>
+                    <span class="btn-text">My Applications</span>
+                    <div class="btn-description">Track your applications</div>
+                </a>
+            </div>
+        </div>
+
+        {{if .Jobs}}
+            {{range .Jobs}}
+            <div class="job-card">
+                <div class="job-header">
+                    <div>
+                        <a href="/view-job?id={{.ID}}" class="job-title">{{.Title}}</a>
+                        <div class="job-company">
+                            <i class="fa-solid fa-building"></i>
+                            {{if .EmployerCompany}}{{.EmployerCompany}}{{else}}{{.EmployerUsername}}{{end}}
+                        </div>
+                    </div>
+                    <span class="status-badge {{.Status}}">{{.Status}}</span>
+                </div>
+                
+                <div class="job-meta">
+                    <div class="job-meta-item">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span>{{.Location}}</span>
+                    </div>
+                    <div class="job-meta-item">
+                        <i class="fa-solid fa-clock"></i>
+                        <span>{{.EmploymentType}}</span>
+                    </div>
+                    {{if .SalaryRange}}
+                    <div class="job-meta-item">
+                        <i class="fa-solid fa-dollar-sign"></i>
+                        <span>{{.SalaryRange}}</span>
+                    </div>
+                    {{end}}
+                    <div class="job-meta-item">
+                        <i class="fa-solid fa-calendar"></i>
+                        <span>Posted {{.CreatedAtHuman}}</span>
+                    </div>
+                </div>
+                
+                <div class="job-description">
+                    {{if gt (len .Description) 200}}
+                        {{slice .Description 0 200}}...
+                    {{else}}
+                        {{.Description}}
+                    {{end}}
+                </div>
+                
+                <div class="job-actions">
+                    <div class="job-deadline">
+                        <i class="fa-solid fa-hourglass-end"></i>
+                        Apply by {{.DeadlineHuman}}
+                    </div>
+                    <div>
+                        <a href="/view-job?id={{.ID}}" class="btn-view">View Details</a>
+                        {{if not .IsOwner}}
+                            {{if .HasApplied}}
+                                <button class="btn-apply" disabled>Already Applied</button>
+                            {{else}}
+                                <a href="/apply-job?id={{.ID}}" class="btn-apply">Apply Now</a>
+                            {{end}}
+                        {{end}}
+                    </div>
+                </div>
+                
+                {{if .ApplicationsCount}}
+                <div style="margin-top: 10px; color: var(--secondary-color); font-size: 0.85rem;">
+                    <i class="fa-solid fa-users"></i>
+                    {{.ApplicationsCount}} application{{if ne .ApplicationsCount 1}}s{{end}}
+                </div>
+                {{end}}
+            </div>
+            {{end}}
+        {{else}}
+            <div class="empty-state">
+                <i class="fa-solid fa-briefcase"></i>
+                <h3>No Jobs Available</h3>
+                <p>Be the first to post a job opportunity in the M&E community!</p>
+                <a href="/create-job" class="btn-apply">Post a Job</a>
+            </div>
+        {{end}}
+    </div>
+</section>
+{{end}}
